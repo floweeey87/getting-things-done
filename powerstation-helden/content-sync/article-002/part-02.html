@@ -1,0 +1,62 @@
+<h2>Reihe oder parallel: Was ändert sich?</h2>
+<div class="psh-table-wrap"><table>
+<thead><tr><th>Verschaltung</th><th>Spannung</th><th>Strom</th><th>Typischer Vorteil</th><th>Hauptrisiko</th></tr></thead>
+<tbody>
+<tr><td>Reihe</td><td>addiert sich</td><td>bleibt ungefähr wie bei einem Panel</td><td>höhere Spannung, geringere Leitungsverluste bei gleicher Leistung</td><td>Voc-Grenze kann überschritten werden; schwächstes Panel bremst den String</td></tr>
+<tr><td>Parallel</td><td>bleibt ungefähr wie bei einem Panel</td><td>addiert sich</td><td>bei unterschiedlich verschatteten Panels oft robuster</td><td>Stromgrenze, Kabel und Steckverbinder werden stärker belastet</td></tr>
+<tr><td>Serie/parallel</td><td>beides steigt</td><td>beides steigt</td><td>größere Arrays an passenden Eingängen</td><td>Fehlplanung wird komplexer; identische Strings nötig</td></tr>
+</tbody>
+</table></div>
+<p>Für zwei identische Panels mit je 24 V Voc und 6 A Isc gilt vereinfacht:</p>
+<ul>
+<li><strong>Reihe:</strong> etwa 48 V Voc und 6 A Isc.</li>
+<li><strong>Parallel:</strong> etwa 24 V Voc und 12 A Isc.</li>
+</ul>
+<p>Diese Rechnung ersetzt nicht die Temperaturkorrektur und die konkrete Herstellerfreigabe. Panels mit stark abweichenden elektrischen Daten solltest du nicht ohne fachliche Prüfung mischen.</p>
+
+<h2>Stecker verstehen: MC4, XT60, XT60i und proprietäre Anschlüsse</h2>
+<p>MC4 ist bei vielen Solarpanels der übliche wetterfeste Steckverbinder. Powerstations nutzen auf der Geräteseite häufig XT60, XT60i, DC7909, Anderson oder herstellerspezifische Anschlüsse. Ein Adapter stellt nur die mechanische Verbindung her.</p>
+<p>Vor dem Anschließen prüfst du:</p>
+<ul>
+<li>Polarität am Adapter,</li>
+<li>Spannungs- und Stromfreigabe des Kabels,</li>
+<li>zulässigen Querschnitt und Länge,</li>
+<li>ob der Eingang Solar und nicht nur Fahrzeugladung unterstützt,</li>
+<li>ob der Hersteller einen bestimmten Adaptertyp verlangt.</li>
+</ul>
+<p>Verpolte oder billige Adapter können Schutzabschaltungen auslösen oder Schäden verursachen. Verwende keine offenen Bastelverbindungen und trenne MC4-Stecker nicht unter hoher Last, sofern die Anleitung das nicht ausdrücklich vorsieht.</p>
+
+<h2>Wie viel Solarertrag ist realistisch?</h2>
+<p>Die tägliche Energie ergibt sich nicht aus „Panel-Watt × Tageslichtstunden“. Relevant sind die Stunden mit nutzbarer Einstrahlung und die Verluste des Gesamtsystems.</p>
+<p><strong>Grobe Rechnung:</strong> Panelleistung × äquivalente Volllaststunden × Systemfaktor.</p>
+<p>Für mobile Sets kann ein Systemfaktor von etwa 0,65 bis 0,85 als vorsichtige Planungsgröße dienen. Er berücksichtigt unter anderem Temperatur, Ausrichtung, Kabel, MPPT und Ladeverluste. Die tatsächlichen Volllaststunden hängen stark von Ort, Monat und Wetter ab.</p>
+
+<div class="psh-table-wrap"><table>
+<thead><tr><th>Panel</th><th>2 gute Sonnenstunden</th><th>4 gute Sonnenstunden</th><th>6 gute Sonnenstunden</th></tr></thead>
+<tbody>
+<tr><td>100 W</td><td>ca. 130–170 Wh</td><td>ca. 260–340 Wh</td><td>ca. 390–510 Wh</td></tr>
+<tr><td>200 W</td><td>ca. 260–340 Wh</td><td>ca. 520–680 Wh</td><td>ca. 780–1.020 Wh</td></tr>
+<tr><td>400 W</td><td>ca. 520–680 Wh</td><td>ca. 1.040–1.360 Wh</td><td>ca. 1.560–2.040 Wh</td></tr>
+</tbody>
+</table></div>
+<p>Diese Werte sind Szenarien, keine Wetterprognose. In Deutschland kann ein Sommertag sehr gut ausfallen, während Winter, Regen oder tiefe Sonne den Ertrag massiv reduzieren. Unser <a href="/solarertrag-rechner/">Solarertrag-Rechner</a> hilft bei einer standort- und saisonbezogenen Abschätzung.</p>
+
+<h2>Warum Verschattung so kritisch ist</h2>
+<p>Ein Panel liefert nur so gut wie seine beleuchteten Zellen und die interne Verschaltung es erlauben. Ein Ast, Dachfenster, Gepäckstück oder die Powerstation selbst kann den Ertrag deutlich reduzieren. In einem Serienstring kann ein verschattetes Panel die Leistung der gesamten Reihe begrenzen.</p>
+<ul>
+<li>Panels möglichst frei und gleich ausrichten.</li>
+<li>Den Sonnenstand im Tagesverlauf berücksichtigen.</li>
+<li>Faltpanels regelmäßig nachführen, wenn hoher Ertrag wichtig ist.</li>
+<li>Kabel so legen, dass niemand stolpert und keine Stecker im Wasser liegen.</li>
+<li>Powerstation im Schatten und innerhalb ihrer Temperaturgrenzen betreiben.</li>
+</ul>
+
+<h2>Faltbar, starr oder flexibel?</h2>
+<h3>Faltbare Solarpanels</h3>
+<p>Sie sind leicht zu transportieren und schnell aufgebaut. Dafür sind Aufstellung, Windempfindlichkeit, Wärmeabfuhr und dauerhafte mechanische Belastung kritischer als bei starren Modulen. Für Camping und wechselnde Stellplätze sind sie meist die praktischste Lösung.</p>
+
+<h3>Starre Solarmodule</h3>
+<p>Starre Glas-Folie- oder Glas-Glas-Module eignen sich für feste Installationen am Wohnmobil, Gartenhaus oder Balkon. Sie sind meist günstiger pro Watt und mechanisch stabil, brauchen aber eine sichere Befestigung und bei Fahrzeugen eine fachgerechte Durchführung und Abdichtung.</p>
+
+<h3>Flexible Module</h3>
+<p>Flexible Panels sind leicht und passen auf gekrümmte Flächen. Je nach Montage können Wärme, fehlende Hinterlüftung und mechanische Belastung die Lebensdauer beeinflussen. Sie sind keine automatische Qualitäts- oder Gewichtsgewinn-Lösung.</p>
