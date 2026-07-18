@@ -1,0 +1,54 @@
+<p><strong>Die kurze Antwort:</strong> Eine Powerstation lässt sich zuverlässig mit Solarpanels laden, wenn <strong>Spannung, Strom, Leistung und Stecker</strong> zum PV-Eingang passen. Nicht die Akku-Kapazität allein bestimmt die Panelgröße, sondern vor allem das Solar-Eingangslimit der Powerstation, dein Tagesverbrauch, der Standort und die verfügbare Sonnenzeit. Ein nominelles 200-W-Panel liefert unterwegs nicht dauerhaft 200 W; Ausrichtung, Temperatur, Wolken und Verschattung senken den Ertrag.</p>
+
+<div class="psh-keyfacts">
+<p><strong>Das Wichtigste in Kürze:</strong></p>
+<ul>
+<li><strong>Vier Werte abgleichen:</strong> maximale Leerlaufspannung (Voc), Kurzschlussstrom (Isc), PV-Leistung und zulässiger Eingangsspannungsbereich der Powerstation.</li>
+<li><strong>Voc niemals überschreiten:</strong> Besonders bei Reihenschaltung addieren sich die Spannungen. Kälte kann die Leerlaufspannung zusätzlich erhöhen.</li>
+<li><strong>Teilverschattung kostet überproportional:</strong> Schon ein Schatten auf einem Panel oder Teilbereich kann den gesamten String deutlich bremsen.</li>
+<li><strong>Nennleistung ist kein Tagesertrag:</strong> Ein 200-W-Panel kann an einem guten Sommertag mehrere hundert Wh liefern, bei schlechtem Wetter aber nur einen Bruchteil.</li>
+<li><strong>Adapter sind keine Leistungsfreigabe:</strong> Ein passender Stecker bedeutet nicht automatisch, dass Spannung, Polarität und Strom kompatibel sind.</li>
+</ul>
+</div>
+
+<p><em>Transparenz: Dieser Beitrag ist eine technische Einordnung auf Basis von Herstellerhandbüchern und nachvollziehbaren Berechnungen. Es handelt sich nicht um einen eigenen Labor- oder Langzeittest. Maßgeblich bleiben die aktuellen Datenblätter deiner Powerstation, Panels und Kabel.</em></p>
+
+<h2>Solar laden: Die Entscheidung in fünf Schritten</h2>
+<ol>
+<li><strong>Tagesverbrauch bestimmen:</strong> Welche Geräte sollen wie viele Wh pro Tag verbrauchen?</li>
+<li><strong>PV-Eingang prüfen:</strong> Spannungsbereich, maximale Voc, maximaler Strom und maximale Solarleistung notieren.</li>
+<li><strong>Paneldaten prüfen:</strong> Voc, Vmp, Isc und Imp vom Typenschild oder Datenblatt übernehmen.</li>
+<li><strong>Verschaltung berechnen:</strong> Serie erhöht die Spannung, parallel erhöht den Strom.</li>
+<li><strong>Ertrag realistisch planen:</strong> Wetter, Jahreszeit, Ausrichtung, Temperatur und Verschattung berücksichtigen.</li>
+</ol>
+
+<h2>Welche Panel-Leistung passt zur Powerstation?</h2>
+<p>Eine pauschale Regel wie „20 bis 30 Prozent der Akku-Kapazität“ ist zu grob. Zwei Powerstations mit jeweils 1.000 Wh können völlig unterschiedliche Solar-Eingänge besitzen. Ein Modell nimmt vielleicht maximal 200 W an, ein anderes 500 W oder mehr. Deshalb gilt:</p>
+<p><strong>Sinnvolle Panelleistung = kleiner oder gleich dem technisch zulässigen PV-Setup und groß genug für deinen täglichen Energiebedarf.</strong></p>
+
+<div class="psh-table-wrap"><table>
+<thead><tr><th>Tagesverbrauch</th><th>Realistisches mobiles Setup</th><th>Typischer Einsatz</th><th>Hinweis</th></tr></thead>
+<tbody>
+<tr><td>150–300 Wh</td><td>100–200 W Panel</td><td>Smartphone, Licht, Laptop</td><td>bei guter Sonne oft ausreichend</td></tr>
+<tr><td>400–700 Wh</td><td>200–400 W Panel</td><td>Kühlbox, Laptop, Kleingeräte</td><td>Wetterreserve einplanen</td></tr>
+<tr><td>800–1.200 Wh</td><td>400–800 W Panel</td><td>Wohnmobil, längere Autarkie</td><td>nur bei passendem PV-Eingang</td></tr>
+<tr><td>mehr als 1.200 Wh</td><td>ab etwa 800 W oder mehrere Ladewege</td><td>große Verbraucher, Notstrom</td><td>stationäres oder modulares System prüfen</td></tr>
+</tbody>
+</table></div>
+<p>Die Tabelle ist eine Planungsgröße, keine Leistungszusage. Ein 400-W-Array kann bei guter Ausrichtung zeitweise nahe an die Nennleistung kommen, im Alltag aber auch deutlich darunter liegen.</p>
+
+<h2>Die vier entscheidenden elektrischen Werte</h2>
+<h3>1. Voc: Leerlaufspannung</h3>
+<p>Voc ist die Spannung eines unbelasteten Panels. Sie ist für die Sicherheit besonders wichtig, weil sie bei Reihenschaltung addiert wird. Überschreitet die gesamte Voc die zulässige Maximalspannung des PV-Eingangs, kann die Powerstation beschädigt werden.</p>
+<p><strong>Beispiel:</strong> Zwei Panels mit je 24 V Voc ergeben in Reihe 48 V Voc. Ist der Eingang nur bis 50 V freigegeben, bleibt kaum Reserve. Da die Leerlaufspannung bei niedriger Temperatur steigen kann, ist ein solches Setup ohne Temperaturkorrektur und Herstellerfreigabe zu knapp geplant.</p>
+
+<h3>2. Vmp: Spannung am Arbeitspunkt</h3>
+<p>Vmp ist die Spannung, bei der das Panel unter Standardbedingungen seine Nennleistung erreicht. Sie muss in den MPPT-Arbeitsbereich der Powerstation passen. Liegt die Spannung unter dem Mindestwert, startet das Solar-Laden möglicherweise nicht oder nur instabil.</p>
+
+<h3>3. Isc und Imp: Stromgrenzen</h3>
+<p>Isc ist der Kurzschlussstrom, Imp der Strom am Arbeitspunkt. Bei Parallelschaltung addieren sich die Ströme. Der Hersteller kann entweder Isc, Eingangsstrom oder beides begrenzen. Maßgeblich ist immer die konkrete Anleitung der Powerstation.</p>
+
+<h3>4. Maximale PV-Leistung</h3>
+<p>Die Wattgrenze sagt, wie viel Solarleistung die Powerstation maximal verarbeiten kann. Ein größeres Array kann bei manchen Systemen erlaubt sein, wenn Spannung und Strom innerhalb der Grenzen bleiben; andere Hersteller untersagen Überbelegung ausdrücklich. Ohne klare Freigabe solltest du das Nennlimit nicht überschreiten.</p>
+
+<div class="psh-warning"><strong>Keine Schätzung bei Grenzwerten:</strong> Spannung ist der kritischste Wert. Ein zu hoher Strom wird von manchen Eingängen begrenzt, eine zu hohe Spannung kann dagegen unmittelbar Schaden verursachen. Halte dich an das Handbuch.</div>
