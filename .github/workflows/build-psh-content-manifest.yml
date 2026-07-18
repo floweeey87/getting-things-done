@@ -8,19 +8,31 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: psh-content-manifest
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Build manifest
         run: |
           python - <<'PY'
           from pathlib import Path
           import base64, hashlib, json
+
           root = Path('powerstation-helden/content-sync')
           cfg = json.loads((root / 'ready.json').read_text())
-          content = ''.join(p.read_text() for p in sorted((root / cfg['source_dir']).glob('part-*.html')))
+          parts = sorted((root / cfg['source_dir']).glob('part-*.html'))
+          if not parts:
+              raise SystemExit(f"No article parts found in {cfg['source_dir']}")
+
+          content = ''.join(p.read_text() for p in parts)
           manifest = {
               'version': int(cfg['version']),
               'updates': [{
@@ -31,12 +43,32 @@ jobs:
                   'content_sha256': hashlib.sha256(content.encode()).hexdigest(),
               }],
           }
-          (root / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, separators=(',', ':')))
+          (root / 'manifest.json').write_text(
+              json.dumps(manifest, ensure_ascii=False, separators=(',', ':'))
+          )
           PY
-      - name: Commit manifest
+
+      - name: Commit and push safely
         run: |
+          set -euo pipefail
           git config user.name 'PSH Content Builder'
           git config user.email 'actions@users.noreply.github.com'
           git add powerstation-helden/content-sync/manifest.json
-          git diff --cached --quiet || git commit -m 'Build PSH content manifest'
-          git push
+
+          if git diff --cached --quiet; then
+            echo 'Manifest already current.'
+            exit 0
+          fi
+
+          git commit -m 'Build PSH content manifest'
+
+          for attempt in 1 2 3; do
+            if git push origin HEAD:master; then
+              exit 0
+            fi
+            echo "Push conflict on attempt ${attempt}; rebasing onto latest master."
+            git pull --rebase origin master
+          done
+
+          echo 'Unable to push manifest after 3 attempts.' >&2
+          exit 1
