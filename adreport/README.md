@@ -11,8 +11,14 @@ Positionierung siehe [MARKET-OPPORTUNITY.md](../MARKET-OPPORTUNITY.md): der Angr
 ## Nutzung
 
 ```bash
-python3 adreport/build_report.py aktuell.csv vorperiode.csv \
-    --kunde "Beispiel GmbH" --zeitraum "Juli 2026" -o report.html
+# Einzelne Monate
+python3 adreport/build_report.py aktuell.csv vorperiode.csv --kunde "Beispiel GmbH" -o report.html
+
+# Ordner mit Monats-Exporten -> automatisch Mehrmonats-Trends
+python3 adreport/build_report.py exports/ --kunde "Beispiel GmbH"
+
+# White-Label (Logo, Farben, Agenturname) und KI-Feinschliff
+python3 adreport/build_report.py exports/ --brand agentur.json --ai
 ```
 
 - `aktuell.csv` — Kampagnenbericht aus Google Ads (Berichte → Kampagnen → Herunterladen als CSV). Erwartete Spalten: `Kampagne, Impressionen, Klicks, Kosten, Conversions` (optional `Conv.-Wert`).
@@ -32,12 +38,14 @@ python3 adreport/build_report.py \
 
 - **KPI-Kacheln:** Werbekosten, Conversions, Umsatz, ROAS — mit Vorperioden-Delta (bei Kosten gilt „weniger = gut").
 - **Zusammenfassung & Empfehlungen:** generierter Fließtext — Gesamtentwicklung, stärkste/schwächste Kampagne, Budget-Empfehlung bei Kampagnen unter der Effizienzschwelle (ROAS < 1,5), CPC-Auffälligkeiten ≥ 15 %.
+- **Mehrmonats-Trends:** Ab drei Monats-Exporten im Ordner zeigt der Report Trendlinien für Kosten, Conversions und ROAS.
 - **Kosten-je-Kampagne-Chart** und die **vollständige Kampagnentabelle** (CTR, Ø-CPC, Kosten/Conv., ROAS).
+- **White-Label:** `--brand agentur.json` setzt Logo (lokal eingebettet als data-URI), Akzentfarben, Agenturname und Footer — siehe `sample-data/agentur-beispiel.json`.
+- **KI-Feinschliff (optional):** `--ai` verfeinert den Kommentar über die Claude-API (`claude-opus-5`, mit Server-Side-Fallback). Gesendet werden nur aggregierte Kennzahlen, nie Rohdaten; ohne `ANTHROPIC_API_KEY` oder SDK bleibt der regelbasierte Kommentar bestehen. Benötigt `pip install anthropic`.
 - Eine einzige HTML-Datei, hell/dunkel automatisch, druckfähig (→ PDF über den Druckdialog).
 
-## Roadmap (nach Validierung)
+## Roadmap
 
-- Claude-API-Feinschliff für den Kommentar (Ton, Kundenkontext, Zielvorgaben)
+- ✅ White-Label, Mehrmonats-Trends, KI-Feinschliff
 - Meta-Ads- und GA4-Exporte als weitere Quellen
-- White-Label (Logo/Farben je Agentur), PDF-Export ohne Druckdialog
-- Mehrperioden-Trends aus einem Ordner voller Monats-Exporte
+- PDF-Export ohne Druckdialog

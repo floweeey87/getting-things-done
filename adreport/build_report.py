@@ -1,31 +1,51 @@
 #!/usr/bin/env python3
-"""AdReport: erzeugt aus einem Google-Ads-Kampagnen-CSV-Export einen
-fertigen deutschen Kundenreport (eine HTML-Datei) — inklusive KPI-Kacheln,
-Chart, Kampagnentabelle und generiertem Kommentar.
+"""AdReport: erzeugt aus Google-Ads-Kampagnen-CSV-Exporten einen fertigen
+deutschen Kundenreport (eine HTML-Datei) — KPI-Kacheln, Kosten-Chart,
+Mehrmonats-Trends, Kampagnentabelle und generierter Kommentar.
 
 Local-first: läuft komplett offline mit der Python-Standardbibliothek.
-Kundendaten verlassen den Rechner nicht.
+Kundendaten verlassen den Rechner nicht. Ausnahme nur auf Wunsch: --ai
+schickt die aggregierten Kampagnen-Kennzahlen (keine Rohdaten) an die
+Claude-API, um den Kommentar sprachlich zu verfeinern.
 
 Nutzung:
-    python3 build_report.py aktuell.csv [vorperiode.csv] \
-        --kunde "Beispiel GmbH" --zeitraum "Juli 2026" -o dist/report.html
+    # Einzelne Monate
+    python3 build_report.py aktuell.csv [vorperiode.csv] --kunde "Beispiel GmbH"
+
+    # Ordner mit Monats-Exporten (alphabetisch sortiert, neuester = aktuell)
+    python3 build_report.py exports/ --kunde "Beispiel GmbH"
+
+    # White-Label und KI-Feinschliff
+    python3 build_report.py exports/ --brand agentur.json --ai
 """
 
 import argparse
+import base64
 import csv
 import html
 import io
+import json
+import mimetypes
+import os
 import sys
 from pathlib import Path
 
 REQUIRED = ["Kampagne", "Impressionen", "Klicks", "Kosten", "Conversions"]
+
+DEFAULT_BRAND = {
+    "agentur": "",
+    "logo": "",
+    "accent": "#2a78d6",
+    "accent_dark": "#3987e5",
+    "footer": "Erstellt mit AdReport · Daten wurden lokal verarbeitet und nicht an Dritte übertragen.",
+}
 
 
 # ---------------------------------------------------------------- Parsen
 
 def parse_number(raw: str) -> float:
     """'1.234,56' / '12,3 %' / '1234.56' -> float."""
-    s = raw.strip().replace(" ", "").replace("€", "").replace("%", "").strip()
+    s = raw.strip().replace(" ", "").replace("€", "").replace("%", "").strip()
     if not s or s in {"--", "-"}:
         return 0.0
     if "," in s:
@@ -82,14 +102,49 @@ def parse_export(path: Path) -> dict:
     total["ctr"] = total["klicks"] / total["impressionen"] * 100 if total["impressionen"] else 0.0
     total["cpc"] = total["kosten"] / total["klicks"] if total["klicks"] else 0.0
     total["roas"] = total["conv_wert"] / total["kosten"] if total["kosten"] else 0.0
-    return {"zeitraum": zeitraum, "campaigns": campaigns, "total": total}
+    return {"zeitraum": zeitraum, "campaigns": campaigns, "total": total,
+            "label": path.stem.replace("kampagnen-", "").replace("-", " ")}
+
+
+def load_inputs(paths: list[Path]) -> list[dict]:
+    """Ein Ordner (alle *.csv, sortiert) oder 1-2 CSV-Dateien -> Historie,
+    ältester zuerst, neuester = Berichtszeitraum."""
+    if len(paths) == 1 and paths[0].is_dir():
+        files = sorted(paths[0].glob("*.csv"))
+        if not files:
+            raise SystemExit(f"{paths[0]}: keine CSV-Dateien gefunden.")
+        return [parse_export(f) for f in files]
+    if len(paths) == 2:
+        return [parse_export(paths[1]), parse_export(paths[0])]
+    return [parse_export(paths[0])]
+
+
+def load_brand(path: Path | None) -> dict:
+    brand = dict(DEFAULT_BRAND)
+    if path:
+        brand.update(json.loads(path.read_text()))
+    return brand
+
+
+def logo_data_uri(logo: str) -> str:
+    """Lokale Logodatei als data:-URI einbetten; URLs unverändert lassen."""
+    if not logo:
+        return ""
+    if logo.startswith(("http://", "https://", "data:")):
+        return logo
+    p = Path(logo)
+    if not p.exists():
+        print(f"Warnung: Logo {logo} nicht gefunden — wird ausgelassen.", file=sys.stderr)
+        return ""
+    mime = mimetypes.guess_type(p.name)[0] or "image/png"
+    return f"data:{mime};base64,{base64.b64encode(p.read_bytes()).decode()}"
 
 
 # ------------------------------------------------------------ Formatieren
 
 def de(value: float, decimals: int = 0) -> str:
     s = f"{value:,.{decimals}f}"
-    return s.replace(",", " ").replace(".", ",").replace(" ", ".")
+    return s.replace(",", " ").replace(".", ",").replace(" ", ".")
 
 
 def eur(value: float) -> str:
@@ -133,22 +188,19 @@ def build_commentary(data: dict, prev: dict | None) -> list[str]:
     best, worst = by_roas[0], by_roas[-1]
     hinweis = " (Brand-Traffic ist naturgemäß am effizientesten)" if "brand" in best["name"].lower() else ""
     parts.append(
-        f"Stärkste Kampagne nach Effizienz war \u201e{best['name']}\u201c mit einem ROAS von "
-        f"{de(best['roas'], 2)}{hinweis}. Am schwächsten schnitt \u201e{worst['name']}\u201c ab "
+        f"Stärkste Kampagne nach Effizienz war „{best['name']}“ mit einem ROAS von "
+        f"{de(best['roas'], 2)}{hinweis}. Am schwächsten schnitt „{worst['name']}“ ab "
         f"(ROAS {de(worst['roas'], 2)} bei {eur(worst['kosten'])} Kosten)."
     )
 
     weak = [c for c in by_roas if c["roas"] < 1.5 and c["kosten"] > total["kosten"] * 0.05]
     strong = [c for c in by_roas if c["roas"] > total["roas"]]
     if weak:
-        namen = ", ".join(f"\u201e{c['name']}\u201c" for c in weak)
+        namen = ", ".join(f"„{c['name']}“" for c in weak)
         empf = (f" Empfehlung: Budget schrittweise in die effizienteren Kampagnen "
-                f"(z. B. \u201e{strong[1]['name'] if len(strong) > 1 else strong[0]['name']}\u201c) verlagern "
+                f"(z. B. „{strong[1]['name'] if len(strong) > 1 else strong[0]['name']}“) verlagern "
                 f"oder Ausrichtung und Gebote der schwachen Kampagne überarbeiten.") if strong else ""
-        parts.append(
-            f"Unter der Effizienzschwelle (ROAS < 1,5) liegt: {namen}."
-            f"{empf}"
-        )
+        parts.append(f"Unter der Effizienzschwelle (ROAS < 1,5) liegt: {namen}.{empf}")
 
     if prev:
         prev_by_name = {c["name"]: c for c in prev["campaigns"]}
@@ -159,12 +211,68 @@ def build_commentary(data: dict, prev: dict | None) -> list[str]:
             d_cpc = pct_delta(c["cpc"], p["cpc"])
             if d_cpc is not None and abs(d_cpc) >= 15:
                 parts.append(
-                    f"Auffällig: Der durchschnittliche Klickpreis von \u201e{c['name']}\u201c hat sich um "
+                    f"Auffällig: Der durchschnittliche Klickpreis von „{c['name']}“ hat sich um "
                     f"{d_cpc:+.1f} % auf {eur(c['cpc'])} verändert — "
                     f"{'Wettbewerbsdruck oder Gebotsanpassungen prüfen.' if d_cpc > 0 else 'die Effizienzgewinne können für zusätzliche Reichweite genutzt werden.'}"
                 )
                 break
     return parts
+
+
+def ai_refine(parts: list[str], data: dict, kunde: str) -> list[str]:
+    """Optionaler Feinschliff des Kommentars über die Claude-API (claude-opus-5).
+
+    Gesendet werden nur die aggregierten Kennzahlen und der vorformulierte
+    Kommentar — keine Rohdaten. Bei jedem Fehler bleibt der regelbasierte
+    Kommentar unverändert bestehen.
+    """
+    try:
+        import anthropic
+    except ImportError:
+        print("Warnung: --ai benötigt das Paket 'anthropic' (pip install anthropic) — "
+              "verwende regelbasierten Kommentar.", file=sys.stderr)
+        return parts
+
+    kennzahlen = [
+        {"kampagne": c["name"], "kosten": round(c["kosten"], 2),
+         "conversions": c["conversions"], "roas": round(c["roas"], 2),
+         "cpc": round(c["cpc"], 2), "ctr": round(c["ctr"], 2)}
+        for c in data["campaigns"]
+    ]
+    try:
+        client = anthropic.Anthropic()
+        response = client.beta.messages.create(
+            model="claude-opus-5",
+            max_tokens=2000,
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
+            system=(
+                "Du bist ein erfahrener deutscher PPC-Berater und verfeinerst den "
+                "Kommentar eines Google-Ads-Kundenreports. Behalte alle Zahlen und "
+                "Kernaussagen exakt bei, verbessere Sprache, Fluss und Kundennutzen. "
+                "Antworte ausschließlich mit den überarbeiteten Absätzen, getrennt "
+                "durch Leerzeilen — keine Überschriften, keine Meta-Kommentare."
+            ),
+            messages=[{
+                "role": "user",
+                "content": (
+                    f"Kunde: {kunde}\n\nKennzahlen (aggregiert):\n"
+                    f"{json.dumps(kennzahlen, ensure_ascii=False)}\n\n"
+                    f"Bisheriger Kommentar:\n\n" + "\n\n".join(parts)
+                ),
+            }],
+        )
+        if response.stop_reason == "refusal":
+            print("Warnung: KI-Feinschliff abgelehnt — verwende regelbasierten Kommentar.",
+                  file=sys.stderr)
+            return parts
+        text = next((b.text for b in response.content if b.type == "text"), "")
+        refined = [p.strip() for p in text.split("\n\n") if p.strip()]
+        return refined or parts
+    except Exception as exc:
+        print(f"Warnung: KI-Feinschliff fehlgeschlagen ({type(exc).__name__}) — "
+              f"verwende regelbasierten Kommentar.", file=sys.stderr)
+        return parts
 
 
 # ----------------------------------------------------------------- HTML
@@ -197,6 +305,54 @@ def bar_chart(campaigns: list[dict]) -> str:
     return "\n".join(rows)
 
 
+def sparkline(values: list[float], labels: list[str], fmt) -> str:
+    """Kleine SVG-Trendlinie: 2px-Linie, Endpunkt-Marker, Erst-/Letztwert beschriftet."""
+    w, h, pad = 260, 56, 8
+    lo, hi = min(values), max(values)
+    span = (hi - lo) or 1.0
+    n = len(values)
+    pts = []
+    for i, v in enumerate(values):
+        x = pad + (w - 2 * pad) * (i / (n - 1))
+        y = h - pad - (h - 2 * pad) * ((v - lo) / span)
+        pts.append((x, y))
+    poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+    lx, ly = pts[-1]
+    title = " · ".join(f"{l}: {fmt(v)}" for l, v in zip(labels, values))
+    return (
+        f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="{html.escape(title)}">'
+        f'<title>{html.escape(title)}</title>'
+        f'<polyline points="{poly}" fill="none" stroke="var(--accent)" stroke-width="2" '
+        f'stroke-linejoin="round" stroke-linecap="round"/>'
+        f'<circle cx="{lx:.1f}" cy="{ly:.1f}" r="4" fill="var(--accent)"/>'
+        f'</svg>'
+    )
+
+
+def trend_section(history: list[dict]) -> str:
+    """Small Multiples für Kosten, Conversions, ROAS über alle Monate."""
+    if len(history) < 3:
+        return ""
+    labels = [h["label"] for h in history]
+    metrics = [
+        ("Kosten", [h["total"]["kosten"] for h in history], eur),
+        ("Conversions", [h["total"]["conversions"] for h in history], lambda v: de(v)),
+        ("ROAS", [h["total"]["roas"] for h in history], lambda v: de(v, 2)),
+    ]
+    cells = []
+    for name, values, fmt in metrics:
+        cells.append(
+            f'<div class="trend-cell"><div class="trend-head">'
+            f'<span class="trend-name">{name}</span>'
+            f'<span class="trend-value">{fmt(values[-1])}</span></div>'
+            f'{sparkline(values, labels, fmt)}'
+            f'<div class="trend-axis"><span>{html.escape(labels[0])}</span>'
+            f'<span>{html.escape(labels[-1])}</span></div></div>'
+        )
+    return (f'<h2>Entwicklung über {len(history)} Monate</h2>'
+            f'<div class="card trend-grid">{"".join(cells)}</div>')
+
+
 def table(campaigns: list[dict], total: dict) -> str:
     rows = []
     for c in sorted(campaigns, key=lambda c: c["kosten"], reverse=True):
@@ -216,7 +372,10 @@ def table(campaigns: list[dict], total: dict) -> str:
     return "\n".join(rows)
 
 
-def render(kunde: str, zeitraum: str, data: dict, prev: dict | None) -> str:
+def render(kunde: str, zeitraum: str, history: list[dict], brand: dict,
+           commentary_parts: list[str]) -> str:
+    data = history[-1]
+    prev = history[-2] if len(history) >= 2 else None
     total = data["total"]
     pt = prev["total"] if prev else None
     tiles = "\n".join([
@@ -229,7 +388,12 @@ def render(kunde: str, zeitraum: str, data: dict, prev: dict | None) -> str:
         kpi_tile("ROAS", de(total["roas"], 2),
                  pct_delta(total["roas"], pt["roas"]) if pt else None),
     ])
-    commentary = "\n".join(f"<p>{html.escape(p)}</p>" for p in build_commentary(data, prev))
+    commentary = "\n".join(f"<p>{html.escape(p)}</p>" for p in commentary_parts)
+
+    logo_uri = logo_data_uri(brand.get("logo", ""))
+    logo_html = f'<img class="logo" src="{logo_uri}" alt="">' if logo_uri else ""
+    agentur = html.escape(brand.get("agentur", ""))
+    agentur_html = f'<span class="agentur">{agentur}</span>' if agentur else ""
 
     return f"""<!doctype html>
 <html lang="de">
@@ -243,7 +407,7 @@ def render(kunde: str, zeitraum: str, data: dict, prev: dict | None) -> str:
   --page: #f9f9f7; --surface: #fcfcfb;
   --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
   --grid: #e1e0d9; --border: rgba(11,11,11,.10);
-  --series-1: #2a78d6; --good: #006300; --bad: #d03b3b;
+  --accent: {brand["accent"]}; --good: #006300; --bad: #d03b3b;
 }}
 @media (prefers-color-scheme: dark) {{
   :root {{
@@ -251,7 +415,7 @@ def render(kunde: str, zeitraum: str, data: dict, prev: dict | None) -> str:
     --page: #0d0d0d; --surface: #1a1a19;
     --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
     --grid: #2c2c2a; --border: rgba(255,255,255,.10);
-    --series-1: #3987e5; --good: #0ca30c; --bad: #e66767;
+    --accent: {brand["accent_dark"]}; --good: #0ca30c; --bad: #e66767;
   }}
 }}
 * {{ box-sizing: border-box; margin: 0; }}
@@ -261,9 +425,11 @@ body {{
   max-width: 880px; margin: 0 auto; padding: 2.5rem 1.2rem 4rem;
   line-height: 1.55;
 }}
-header {{ margin-bottom: 2rem; }}
+header {{ margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }}
+.logo {{ height: 44px; width: auto; }}
 h1 {{ font-size: 1.5rem; }}
 .zeitraum {{ color: var(--ink-2); margin-top: .2rem; }}
+.agentur {{ margin-left: auto; color: var(--muted); font-size: .85rem; }}
 h2 {{ font-size: 1.05rem; margin: 2.2rem 0 .9rem; }}
 .tiles {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; }}
 .tile {{
@@ -280,20 +446,26 @@ h2 {{ font-size: 1.05rem; margin: 2.2rem 0 .9rem; }}
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 12px; padding: 1.1rem 1.2rem;
 }}
+.trend-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }}
+.trend-head {{ display: flex; justify-content: space-between; align-items: baseline; }}
+.trend-name {{ font-size: .85rem; color: var(--ink-2); }}
+.trend-value {{ font-weight: 700; font-variant-numeric: tabular-nums; }}
+.trend-cell svg {{ width: 100%; height: auto; margin-top: .3rem; }}
+.trend-axis {{ display: flex; justify-content: space-between;
+  font-size: .72rem; color: var(--muted); }}
 .bar-row {{
   display: grid; grid-template-columns: minmax(120px, 220px) 1fr 110px;
   align-items: center; gap: .7rem; padding: .3rem 0; border-radius: 6px;
 }}
-.bar-row:hover {{ background: color-mix(in srgb, var(--series-1) 8%, transparent); }}
+.bar-row:hover {{ background: color-mix(in srgb, var(--accent) 8%, transparent); }}
 .bar-name {{ font-size: .85rem; color: var(--ink-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
 .bar-track {{ position: relative; height: 14px; }}
 .bar-fill {{
-  position: absolute; inset: 0 auto 0 0; background: var(--series-1);
+  position: absolute; inset: 0 auto 0 0; background: var(--accent);
   border-radius: 0 4px 4px 0; min-width: 3px;
 }}
-.bar-value {{ font-size: .85rem; text-align: right;
-  font-variant-numeric: tabular-nums; }}
+.bar-value {{ font-size: .85rem; text-align: right; font-variant-numeric: tabular-nums; }}
 .kommentar p + p {{ margin-top: .8rem; }}
 table {{ border-collapse: collapse; width: 100%; font-size: .85rem; }}
 th, td {{ padding: .45rem .6rem; text-align: right;
@@ -301,7 +473,7 @@ th, td {{ padding: .45rem .6rem; text-align: right;
 th:first-child, td:first-child {{ text-align: left; }}
 th {{ color: var(--ink-2); font-weight: 600; }}
 tr.total td {{ font-weight: 700; border-top: 2px solid var(--muted); }}
-tr:hover td {{ background: color-mix(in srgb, var(--series-1) 6%, transparent); }}
+tr:hover td {{ background: color-mix(in srgb, var(--accent) 6%, transparent); }}
 .table-wrap {{ overflow-x: auto; }}
 footer {{ margin-top: 3rem; color: var(--muted); font-size: .78rem; }}
 @media print {{ body {{ max-width: none; }} .card, .tile {{ border-color: #ccc; }} }}
@@ -309,8 +481,12 @@ footer {{ margin-top: 3rem; color: var(--muted); font-size: .78rem; }}
 </head>
 <body>
 <header>
-  <h1>Performance-Report · {html.escape(kunde)}</h1>
-  <p class="zeitraum">Google Ads · {html.escape(zeitraum)}</p>
+  {logo_html}
+  <div>
+    <h1>Performance-Report · {html.escape(kunde)}</h1>
+    <p class="zeitraum">Google Ads · {html.escape(zeitraum)}</p>
+  </div>
+  {agentur_html}
 </header>
 
 <section class="tiles">
@@ -321,6 +497,8 @@ footer {{ margin-top: 3rem; color: var(--muted); font-size: .78rem; }}
 <div class="card kommentar">
 {commentary}
 </div>
+
+{trend_section(history)}
 
 <h2>Kosten je Kampagne</h2>
 <div class="card">
@@ -336,29 +514,47 @@ footer {{ margin-top: 3rem; color: var(--muted); font-size: .78rem; }}
 </table>
 </div>
 
-<footer>Erstellt mit AdReport · Daten wurden lokal verarbeitet und nicht an Dritte übertragen.</footer>
+<footer>{html.escape(brand["footer"])}</footer>
 </body>
 </html>
 """
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("aktuell", type=Path, help="CSV-Export des Berichtszeitraums")
-    ap.add_argument("vorperiode", type=Path, nargs="?", help="CSV-Export der Vorperiode (optional, für Deltas)")
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("inputs", type=Path, nargs="+",
+                    help="CSV-Export(e): aktuell [vorperiode] — oder ein Ordner mit Monats-CSVs")
     ap.add_argument("--kunde", default="Kunde", help="Kundenname für die Kopfzeile")
     ap.add_argument("--zeitraum", default="", help="Zeitraum-Text (Standard: aus dem CSV)")
-    ap.add_argument("-o", "--output", type=Path, default=Path(__file__).parent / "dist" / "report.html")
+    ap.add_argument("--brand", type=Path, help="JSON mit agentur, logo, accent, accent_dark, footer")
+    ap.add_argument("--ai", action="store_true",
+                    help="Kommentar per Claude-API verfeinern (benötigt ANTHROPIC_API_KEY)")
+    ap.add_argument("-o", "--output", type=Path,
+                    default=Path(__file__).parent / "dist" / "report.html")
     args = ap.parse_args()
 
-    data = parse_export(args.aktuell)
-    prev = parse_export(args.vorperiode) if args.vorperiode else None
+    history = load_inputs(args.inputs)
+    data = history[-1]
+    prev = history[-2] if len(history) >= 2 else None
     zeitraum = args.zeitraum or data["zeitraum"] or "Berichtszeitraum"
+    brand = load_brand(args.brand)
+
+    commentary = build_commentary(data, prev)
+    if args.ai:
+        commentary = ai_refine(commentary, data, args.kunde)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(render(args.kunde, zeitraum, data, prev))
+    args.output.write_text(render(args.kunde, zeitraum, history, brand, commentary))
+    extras = []
+    if len(history) >= 3:
+        extras.append(f"{len(history)}-Monats-Trend")
+    if prev:
+        extras.append("Vorperioden-Vergleich")
+    if brand.get("agentur") or brand.get("logo"):
+        extras.append("White-Label")
     print(f"OK: {args.output} geschrieben ({len(data['campaigns'])} Kampagnen"
-          f"{', mit Vorperioden-Vergleich' if prev else ''}).")
+          f"{', ' + ', '.join(extras) if extras else ''}).")
     return 0
 
 

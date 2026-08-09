@@ -10,7 +10,7 @@
   --page: #f9f9f7; --surface: #fcfcfb;
   --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
   --grid: #e1e0d9; --border: rgba(11,11,11,.10);
-  --series-1: #2a78d6; --good: #006300; --bad: #d03b3b;
+  --accent: #4a3aa7; --good: #006300; --bad: #d03b3b;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -18,7 +18,7 @@
     --page: #0d0d0d; --surface: #1a1a19;
     --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
     --grid: #2c2c2a; --border: rgba(255,255,255,.10);
-    --series-1: #3987e5; --good: #0ca30c; --bad: #e66767;
+    --accent: #9085e9; --good: #0ca30c; --bad: #e66767;
   }
 }
 * { box-sizing: border-box; margin: 0; }
@@ -28,9 +28,11 @@ body {
   max-width: 880px; margin: 0 auto; padding: 2.5rem 1.2rem 4rem;
   line-height: 1.55;
 }
-header { margin-bottom: 2rem; }
+header { margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
+.logo { height: 44px; width: auto; }
 h1 { font-size: 1.5rem; }
 .zeitraum { color: var(--ink-2); margin-top: .2rem; }
+.agentur { margin-left: auto; color: var(--muted); font-size: .85rem; }
 h2 { font-size: 1.05rem; margin: 2.2rem 0 .9rem; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; }
 .tile {
@@ -47,20 +49,26 @@ h2 { font-size: 1.05rem; margin: 2.2rem 0 .9rem; }
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 12px; padding: 1.1rem 1.2rem;
 }
+.trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
+.trend-head { display: flex; justify-content: space-between; align-items: baseline; }
+.trend-name { font-size: .85rem; color: var(--ink-2); }
+.trend-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+.trend-cell svg { width: 100%; height: auto; margin-top: .3rem; }
+.trend-axis { display: flex; justify-content: space-between;
+  font-size: .72rem; color: var(--muted); }
 .bar-row {
   display: grid; grid-template-columns: minmax(120px, 220px) 1fr 110px;
   align-items: center; gap: .7rem; padding: .3rem 0; border-radius: 6px;
 }
-.bar-row:hover { background: color-mix(in srgb, var(--series-1) 8%, transparent); }
+.bar-row:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .bar-name { font-size: .85rem; color: var(--ink-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bar-track { position: relative; height: 14px; }
 .bar-fill {
-  position: absolute; inset: 0 auto 0 0; background: var(--series-1);
+  position: absolute; inset: 0 auto 0 0; background: var(--accent);
   border-radius: 0 4px 4px 0; min-width: 3px;
 }
-.bar-value { font-size: .85rem; text-align: right;
-  font-variant-numeric: tabular-nums; }
+.bar-value { font-size: .85rem; text-align: right; font-variant-numeric: tabular-nums; }
 .kommentar p + p { margin-top: .8rem; }
 table { border-collapse: collapse; width: 100%; font-size: .85rem; }
 th, td { padding: .45rem .6rem; text-align: right;
@@ -68,7 +76,7 @@ th, td { padding: .45rem .6rem; text-align: right;
 th:first-child, td:first-child { text-align: left; }
 th { color: var(--ink-2); font-weight: 600; }
 tr.total td { font-weight: 700; border-top: 2px solid var(--muted); }
-tr:hover td { background: color-mix(in srgb, var(--series-1) 6%, transparent); }
+tr:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
 .table-wrap { overflow-x: auto; }
 footer { margin-top: 3rem; color: var(--muted); font-size: .78rem; }
 @media print { body { max-width: none; } .card, .tile { border-color: #ccc; } }
@@ -76,32 +84,38 @@ footer { margin-top: 3rem; color: var(--muted); font-size: .78rem; }
 </head>
 <body>
 <header>
-  <h1>Performance-Report · Beispiel GmbH</h1>
-  <p class="zeitraum">Google Ads · 9. Juli 2026 - 8. August 2026</p>
+  
+  <div>
+    <h1>Performance-Report · Beispiel GmbH</h1>
+    <p class="zeitraum">Google Ads · 9. Mai 2026 - 8. Juni 2026</p>
+  </div>
+  <span class="agentur">Beispiel Media GmbH</span>
 </header>
 
 <section class="tiles">
-<div class="tile"><span class="tile-label">Werbekosten</span><span class="tile-value">24.657,70 €</span><span class="delta delta-bad">▲ 7.3 % <em>vs. Vorperiode</em></span></div>
-<div class="tile"><span class="tile-label">Conversions</span><span class="tile-value">1.255</span><span class="delta delta-good">▲ 9.4 % <em>vs. Vorperiode</em></span></div>
-<div class="tile"><span class="tile-label">Umsatz (Conv.-Wert)</span><span class="tile-value">127.750,00 €</span><span class="delta delta-good">▲ 10.0 % <em>vs. Vorperiode</em></span></div>
-<div class="tile"><span class="tile-label">ROAS</span><span class="tile-value">5,18</span><span class="delta delta-good">▲ 2.5 % <em>vs. Vorperiode</em></span></div>
+<div class="tile"><span class="tile-label">Werbekosten</span><span class="tile-value">21.662,90 €</span><span class="delta delta-good">▼ 5.7 % <em>vs. Vorperiode</em></span></div>
+<div class="tile"><span class="tile-label">Conversions</span><span class="tile-value">1.062</span><span class="delta delta-bad">▼ 7.4 % <em>vs. Vorperiode</em></span></div>
+<div class="tile"><span class="tile-label">Umsatz (Conv.-Wert)</span><span class="tile-value">106.720,00 €</span><span class="delta delta-bad">▼ 8.1 % <em>vs. Vorperiode</em></span></div>
+<div class="tile"><span class="tile-label">ROAS</span><span class="tile-value">4,93</span><span class="delta delta-bad">▼ 2.5 % <em>vs. Vorperiode</em></span></div>
 </section>
 
 <h2>Zusammenfassung &amp; Empfehlungen</h2>
 <div class="card kommentar">
-<p>Im Berichtszeitraum wurden 24.657,70 € investiert (+7.3 % gegenüber der Vorperiode) und 1.255 Conversions erzielt (+9.4 %). Der ROAS ist auf 5,18 gestiegen (+2.5 %) — das Konto entwickelt sich damit effizienter als im Vormonat.</p>
-<p>Stärkste Kampagne nach Effizienz war „Brand Search“ mit einem ROAS von 31,11 (Brand-Traffic ist naturgemäß am effizientesten). Am schwächsten schnitt „YouTube Awareness Q3“ ab (ROAS 0,57 bei 2.140,60 € Kosten).</p>
+<p>Im Berichtszeitraum wurden 21.662,90 € investiert (-5.7 % gegenüber der Vorperiode) und 1.062 Conversions erzielt (-7.4 %). Der ROAS ist auf 4,93 gesunken (-2.5 %) — das Konto entwickelt sich damit weniger effizient als im Vormonat.</p>
+<p>Stärkste Kampagne nach Effizienz war „Brand Search“ mit einem ROAS von 29,97 (Brand-Traffic ist naturgemäß am effizientesten). Am schwächsten schnitt „YouTube Awareness Q3“ ab (ROAS 0,58 bei 1.980,10 € Kosten).</p>
 <p>Unter der Effizienzschwelle (ROAS &lt; 1,5) liegt: „YouTube Awareness Q3“. Empfehlung: Budget schrittweise in die effizienteren Kampagnen (z. B. „Remarketing Warenkorbabbrecher“) verlagern oder Ausrichtung und Gebote der schwachen Kampagne überarbeiten.</p>
 </div>
 
+<h2>Entwicklung über 3 Monate</h2><div class="card trend-grid"><div class="trend-cell"><div class="trend-head"><span class="trend-name">Kosten</span><span class="trend-value">21.662,90 €</span></div><svg viewBox="0 0 260 56" role="img" aria-label="juli 2026: 24.657,70 € · juni 2026: 22.971,10 € · mai 2026: 21.662,90 €"><title>juli 2026: 24.657,70 € · juni 2026: 22.971,10 € · mai 2026: 21.662,90 €</title><polyline points="8.0,8.0 130.0,30.5 252.0,48.0" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="252.0" cy="48.0" r="4" fill="var(--accent)"/></svg><div class="trend-axis"><span>juli 2026</span><span>mai 2026</span></div></div><div class="trend-cell"><div class="trend-head"><span class="trend-name">Conversions</span><span class="trend-value">1.062</span></div><svg viewBox="0 0 260 56" role="img" aria-label="juli 2026: 1.255 · juni 2026: 1.147 · mai 2026: 1.062"><title>juli 2026: 1.255 · juni 2026: 1.147 · mai 2026: 1.062</title><polyline points="8.0,8.0 130.0,30.4 252.0,48.0" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="252.0" cy="48.0" r="4" fill="var(--accent)"/></svg><div class="trend-axis"><span>juli 2026</span><span>mai 2026</span></div></div><div class="trend-cell"><div class="trend-head"><span class="trend-name">ROAS</span><span class="trend-value">4,93</span></div><svg viewBox="0 0 260 56" role="img" aria-label="juli 2026: 5,18 · juni 2026: 5,05 · mai 2026: 4,93"><title>juli 2026: 5,18 · juni 2026: 5,05 · mai 2026: 4,93</title><polyline points="8.0,8.0 130.0,28.0 252.0,48.0" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="252.0" cy="48.0" r="4" fill="var(--accent)"/></svg><div class="trend-axis"><span>juli 2026</span><span>mai 2026</span></div></div></div>
+
 <h2>Kosten je Kampagne</h2>
 <div class="card">
-<div class="bar-row" title="Performance Max Ganzjahr: 7.980,10 €, ROAS 3,05"><span class="bar-name">Performance Max Ganzjahr</span><span class="bar-track"><span class="bar-fill" style="width:100.0%"></span></span><span class="bar-value">7.980,10 €</span></div>
-<div class="bar-row" title="Generische Suche Kernprodukte: 6.890,50 €, ROAS 3,21"><span class="bar-name">Generische Suche Kernprodukte</span><span class="bar-track"><span class="bar-fill" style="width:86.3%"></span></span><span class="bar-value">6.890,50 €</span></div>
-<div class="bar-row" title="Shopping Bestseller: 5.420,30 €, ROAS 5,89"><span class="bar-name">Shopping Bestseller</span><span class="bar-track"><span class="bar-fill" style="width:67.9%"></span></span><span class="bar-value">5.420,30 €</span></div>
-<div class="bar-row" title="YouTube Awareness Q3: 2.140,60 €, ROAS 0,57"><span class="bar-name">YouTube Awareness Q3</span><span class="bar-track"><span class="bar-fill" style="width:26.8%"></span></span><span class="bar-value">2.140,60 €</span></div>
-<div class="bar-row" title="Brand Search: 1.245,80 €, ROAS 31,11"><span class="bar-name">Brand Search</span><span class="bar-track"><span class="bar-fill" style="width:15.6%"></span></span><span class="bar-value">1.245,80 €</span></div>
-<div class="bar-row" title="Remarketing Warenkorbabbrecher: 980,40 €, ROAS 9,60"><span class="bar-name">Remarketing Warenkorbabbrecher</span><span class="bar-track"><span class="bar-fill" style="width:12.3%"></span></span><span class="bar-value">980,40 €</span></div>
+<div class="bar-row" title="Performance Max Ganzjahr: 6.890,60 €, ROAS 3,18"><span class="bar-name">Performance Max Ganzjahr</span><span class="bar-track"><span class="bar-fill" style="width:100.0%"></span></span><span class="bar-value">6.890,60 €</span></div>
+<div class="bar-row" title="Generische Suche Kernprodukte: 6.210,90 €, ROAS 2,78"><span class="bar-name">Generische Suche Kernprodukte</span><span class="bar-track"><span class="bar-fill" style="width:90.1%"></span></span><span class="bar-value">6.210,90 €</span></div>
+<div class="bar-row" title="Shopping Bestseller: 4.610,20 €, ROAS 5,34"><span class="bar-name">Shopping Bestseller</span><span class="bar-track"><span class="bar-fill" style="width:66.9%"></span></span><span class="bar-value">4.610,20 €</span></div>
+<div class="bar-row" title="YouTube Awareness Q3: 1.980,10 €, ROAS 0,58"><span class="bar-name">YouTube Awareness Q3</span><span class="bar-track"><span class="bar-fill" style="width:28.7%"></span></span><span class="bar-value">1.980,10 €</span></div>
+<div class="bar-row" title="Brand Search: 1.150,40 €, ROAS 29,97"><span class="bar-name">Brand Search</span><span class="bar-track"><span class="bar-fill" style="width:16.7%"></span></span><span class="bar-value">1.150,40 €</span></div>
+<div class="bar-row" title="Remarketing Warenkorbabbrecher: 820,70 €, ROAS 8,91"><span class="bar-name">Remarketing Warenkorbabbrecher</span><span class="bar-track"><span class="bar-fill" style="width:11.9%"></span></span><span class="bar-value">820,70 €</span></div>
 </div>
 
 <h2>Alle Kampagnen im Detail</h2>
@@ -109,16 +123,16 @@ footer { margin-top: 3rem; color: var(--muted); font-size: .78rem; }
 <table>
 <tr><th>Kampagne</th><th>Impr.</th><th>Klicks</th><th>CTR</th><th>Ø-CPC</th>
 <th>Kosten</th><th>Conv.</th><th>Kosten/Conv.</th><th>ROAS</th></tr>
-<tr><td>Performance Max Ganzjahr</td><td>391.200</td><td>11.230</td><td>2,87 %</td><td>0,71 €</td><td>7.980,10 €</td><td>244</td><td>32,71 €</td><td>3,05</td></tr>
-<tr><td>Generische Suche Kernprodukte</td><td>182.400</td><td>7.290</td><td>4,00 %</td><td>0,95 €</td><td>6.890,50 €</td><td>198</td><td>34,80 €</td><td>3,21</td></tr>
-<tr><td>Shopping Bestseller</td><td>264.800</td><td>9.840</td><td>3,72 %</td><td>0,55 €</td><td>5.420,30 €</td><td>287</td><td>18,89 €</td><td>5,89</td></tr>
-<tr><td>YouTube Awareness Q3</td><td>512.300</td><td>4.110</td><td>0,80 %</td><td>0,52 €</td><td>2.140,60 €</td><td>18</td><td>118,92 €</td><td>0,57</td></tr>
-<tr><td>Brand Search</td><td>48.210</td><td>6.120</td><td>12,69 %</td><td>0,20 €</td><td>1.245,80 €</td><td>412</td><td>3,02 €</td><td>31,11</td></tr>
-<tr><td>Remarketing Warenkorbabbrecher</td><td>96.500</td><td>2.870</td><td>2,97 %</td><td>0,34 €</td><td>980,40 €</td><td>96</td><td>10,21 €</td><td>9,60</td></tr>
-<tr class='total'><td>Gesamt</td><td>1.495.410</td><td>41.460</td><td>2,77 %</td><td>0,59 €</td><td>24.657,70 €</td><td>1.255</td><td>19,65 €</td><td>5,18</td></tr>
+<tr><td>Performance Max Ganzjahr</td><td>331.500</td><td>9.480</td><td>2,86 %</td><td>0,73 €</td><td>6.890,60 €</td><td>212</td><td>32,50 €</td><td>3,18</td></tr>
+<tr><td>Generische Suche Kernprodukte</td><td>168.300</td><td>6.610</td><td>3,93 %</td><td>0,94 €</td><td>6.210,90 €</td><td>158</td><td>39,31 €</td><td>2,78</td></tr>
+<tr><td>Shopping Bestseller</td><td>228.900</td><td>8.410</td><td>3,67 %</td><td>0,55 €</td><td>4.610,20 €</td><td>228</td><td>20,22 €</td><td>5,34</td></tr>
+<tr><td>YouTube Awareness Q3</td><td>441.200</td><td>3.520</td><td>0,80 %</td><td>0,56 €</td><td>1.980,10 €</td><td>17</td><td>116,48 €</td><td>0,58</td></tr>
+<tr><td>Brand Search</td><td>43.800</td><td>5.590</td><td>12,76 %</td><td>0,21 €</td><td>1.150,40 €</td><td>371</td><td>3,10 €</td><td>29,97</td></tr>
+<tr><td>Remarketing Warenkorbabbrecher</td><td>81.400</td><td>2.390</td><td>2,94 %</td><td>0,34 €</td><td>820,70 €</td><td>76</td><td>10,80 €</td><td>8,91</td></tr>
+<tr class='total'><td>Gesamt</td><td>1.295.100</td><td>36.000</td><td>2,78 %</td><td>0,60 €</td><td>21.662,90 €</td><td>1.062</td><td>20,40 €</td><td>4,93</td></tr>
 </table>
 </div>
 
-<footer>Erstellt mit AdReport · Daten wurden lokal verarbeitet und nicht an Dritte übertragen.</footer>
+<footer>Erstellt von Beispiel Media GmbH · Daten wurden lokal verarbeitet und nicht an Dritte übertragen.</footer>
 </body>
 </html>
