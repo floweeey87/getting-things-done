@@ -10,6 +10,18 @@ Positionierung siehe [MARKET-OPPORTUNITY.md](../MARKET-OPPORTUNITY.md): der Angr
 
 ## Nutzung
 
+**Ohne Terminal (empfohlen für die Beta):**
+
+```bash
+python3 adreport/app.py
+```
+
+Öffnet eine lokale Drag-&-Drop-Oberfläche im Browser (nur localhost, keine Datenübertragung).
+CSV-Exporte hineinziehen, Kundennamen eintragen, Report erstellen. Liegt eine `agentur.json`
+neben `app.py`, wird sie automatisch als White-Label-Konfiguration verwendet.
+
+**Per Kommandozeile:**
+
 ```bash
 # Einzelne Monate
 python3 adreport/build_report.py aktuell.csv vorperiode.csv --kunde "Beispiel GmbH" -o report.html
@@ -44,8 +56,18 @@ python3 adreport/build_report.py \
 - **KI-Feinschliff (optional):** `--ai` verfeinert den Kommentar über die Claude-API (`claude-opus-5`, mit Server-Side-Fallback). Gesendet werden nur aggregierte Kennzahlen, nie Rohdaten; ohne `ANTHROPIC_API_KEY` oder SDK bleibt der regelbasierte Kommentar bestehen. Benötigt `pip install anthropic`.
 - Eine einzige HTML-Datei, hell/dunkel automatisch, druckfähig (→ PDF über den Druckdialog).
 
+## Tests
+
+```bash
+cd adreport && python3 -m unittest test_adreport -v
+```
+
+20 Tests decken beide Parser (Google/Meta), deutsche und englische Zahlenformate,
+Spaltenverwechslungs- und Summenzeilen-Fälle, die Kommentar-Regeln, HTML-Escaping
+und den Multipart-Parser der App ab.
+
 ## Roadmap
 
-- ✅ White-Label, Mehrmonats-Trends, KI-Feinschliff, Meta-Ads-Import
+- ✅ White-Label, Mehrmonats-Trends, KI-Feinschliff, Meta-Ads-Import, Drag-&-Drop-App, Test-Suite
 - GA4-Exporte als weitere Quelle
 - PDF-Export ohne Druckdialog
