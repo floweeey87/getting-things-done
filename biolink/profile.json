@@ -1,0 +1,26 @@
+{
+  "name": "Alex Beispiel",
+  "initials": "AB",
+  "tagline": "Marketing · AI · Projekte",
+  "avatar_url": "",
+  "theme": {
+    "accent": "#6c5ce7",
+    "accent_dark": "#a29bfe"
+  },
+  "links": [
+    { "label": "🌐 Website", "url": "https://example.com" },
+    { "label": "📬 Newsletter", "url": "https://example.com/newsletter" },
+    { "label": "🎥 YouTube", "url": "https://youtube.com/@beispiel" },
+    { "label": "💼 LinkedIn", "url": "https://linkedin.com/in/beispiel" },
+    { "label": "📸 Instagram", "url": "https://instagram.com/beispiel" }
+  ],
+  "email_capture": {
+    "enabled": true,
+    "heading": "Bleib auf dem Laufenden",
+    "button": "Eintragen",
+    "placeholder": "deine@email.de",
+    "form_action": "https://formspree.io/f/DEINE_FORM_ID"
+  },
+  "footer": "© 2026 Alex Beispiel",
+  "analytics_snippet": ""
+}

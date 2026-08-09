@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alex Beispiel</title>
+<meta name="description" content="Marketing · AI · Projekte">
+<style>
+:root {
+  --accent: #6c5ce7;
+  --bg: #f4f4f8;
+  --card: #ffffff;
+  --text: #1d1d2b;
+  --muted: #6b6b7b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #a29bfe;
+    --bg: #14141c;
+    --card: #1f1f2b;
+    --text: #ececf4;
+    --muted: #9a9aac;
+  }
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1rem;
+}
+main { width: 100%; max-width: 420px; text-align: center; }
+.avatar {
+  width: 96px; height: 96px; border-radius: 50%;
+  object-fit: cover; margin: 0 auto 1rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar-initials {
+  background: var(--accent); color: #fff;
+  font-size: 2rem; font-weight: 700;
+}
+h1 { font-size: 1.4rem; }
+.tagline { color: var(--muted); margin: .4rem 0 1.6rem; }
+.link {
+  display: block; background: var(--card); color: var(--text);
+  text-decoration: none; font-weight: 600;
+  padding: .9rem 1rem; border-radius: 14px; margin-bottom: .7rem;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  transition: transform .12s ease, border-color .12s ease;
+}
+.link:hover { transform: translateY(-2px); border-color: var(--accent); }
+.capture {
+  background: var(--card); border-radius: 14px;
+  padding: 1.2rem 1rem; margin-top: 1.6rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.capture h2 { font-size: 1rem; margin-bottom: .8rem; }
+.capture form { display: flex; gap: .5rem; }
+.capture input {
+  flex: 1; padding: .7rem .9rem; border-radius: 10px;
+  border: 1px solid var(--muted); background: var(--bg); color: var(--text);
+  font-size: .95rem; min-width: 0;
+}
+.capture button {
+  padding: .7rem 1.1rem; border: none; border-radius: 10px;
+  background: var(--accent); color: #fff; font-weight: 700; cursor: pointer;
+}
+footer { margin-top: 2rem; color: var(--muted); font-size: .8rem; }
+</style>
+</head>
+<body>
+<main>
+  <div class="avatar avatar-initials">AB</div>
+  <h1>Alex Beispiel</h1>
+  <p class="tagline">Marketing · AI · Projekte</p>
+  <nav>
+<a class="link" href="https://example.com" rel="me noopener">🌐 Website</a>
+<a class="link" href="https://example.com/newsletter" rel="me noopener">📬 Newsletter</a>
+<a class="link" href="https://youtube.com/@beispiel" rel="me noopener">🎥 YouTube</a>
+<a class="link" href="https://linkedin.com/in/beispiel" rel="me noopener">💼 LinkedIn</a>
+<a class="link" href="https://instagram.com/beispiel" rel="me noopener">📸 Instagram</a>
+  </nav>
+  
+<section class="capture">
+  <h2>Bleib auf dem Laufenden</h2>
+  <form action="https://formspree.io/f/DEINE_FORM_ID" method="POST">
+    <input type="email" name="email" required placeholder="deine@email.de" autocomplete="email">
+    <button type="submit">Eintragen</button>
+  </form>
+</section>
+  <footer>© 2026 Alex Beispiel</footer>
+</main>
+
+</body>
+</html>
