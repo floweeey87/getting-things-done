@@ -19,7 +19,8 @@ Paket beantwortet Installation, Export und Branding, sodass kein Support-Ping n�
 | 1 | Direktkontakte: bekannte PPC-Freelancer & Kleinst-Agenturen | 10–15 | ehrlichstes Feedback, 2–3 Käufe |
 | 2 | LinkedIn: Kommentierende unter PPC-/SEA-Posts (DACH), 1st/2nd-Degree | 40–50 | Kernkanal |
 | 3 | Communities: SEA-/PPC-Gruppen (Facebook/Slack/Discord), OMR-Community-Threads | 20–30 | Post + Demo-Link, kein Spam: erst Mehrwert, dann Link |
-| 4 | Eigener Kanal: LinkedIn-Posts (fertige Entwürfe in `marketing/linkedin-posts.md`) | 3 Posts | Post 1 vor Welle 2 veröffentlichen |
+| 4 | Eigener Kanal: LinkedIn-Posts (`marketing/linkedin-posts.md`) | 3 Posts | Post 1 vor Welle 2 veröffentlichen |
+| 5 | Paid (optional, Zweitkanal): Meta- & X-Ads (`marketing/ad-copy-meta-x.md`) | 10–15 €/Tag | validiert Messaging, nicht Nachfrage — Messplan beachten |
 
 ## Nachrichten-Vorlagen
 
