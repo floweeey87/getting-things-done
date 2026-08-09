@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdReport — Google-Ads-Kundenreports in 60 Sekunden</title>
+<meta name="description" content="Aus dem Google-Ads-CSV-Export wird ein fertiger deutscher Kundenreport – inklusive geschriebener Zusammenfassung und Empfehlungen. Local-first, DSGVO-nativ, ohne Per-Client-Abo.">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --border: rgba(11,11,11,.10);
+  --accent: #2a78d6; --accent-ink: #ffffff;
+  --good: #006300;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19;
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --border: rgba(255,255,255,.10);
+    --accent: #3987e5; --good: #0ca30c;
+  }
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--page); color: var(--ink); line-height: 1.6;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 1.2rem; }
+header.hero { padding: 4.5rem 0 3rem; text-align: center; }
+.hero h1 { font-size: clamp(1.7rem, 4.5vw, 2.6rem); line-height: 1.2; }
+.hero .sub { font-size: 1.1rem; color: var(--ink-2); margin: 1rem auto 0; max-width: 560px; }
+.cta-row { margin-top: 2rem; display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-block; padding: .85rem 1.5rem; border-radius: 12px;
+  font-weight: 700; text-decoration: none;
+}
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-ghost { border: 1px solid var(--border); color: var(--ink); background: var(--surface); }
+.hint { margin-top: .8rem; font-size: .85rem; color: var(--muted); }
+section { padding: 2.4rem 0; }
+h2 { font-size: 1.35rem; margin-bottom: 1rem; }
+.pain { background: var(--surface); border-block: 1px solid var(--border); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .9rem; margin-top: 1.2rem; }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.1rem 1.2rem;
+}
+.card h3 { font-size: 1rem; margin-bottom: .4rem; }
+.card p { font-size: .92rem; color: var(--ink-2); }
+.steps { counter-reset: step; margin-top: 1.2rem; display: grid; gap: .9rem; }
+.step { display: flex; gap: .9rem; align-items: baseline; }
+.step::before {
+  counter-increment: step; content: counter(step);
+  flex: 0 0 1.8rem; height: 1.8rem; border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink);
+  display: inline-flex; align-items: center; justify-content: center; font-weight: 700;
+}
+.price-box {
+  background: var(--surface); border: 2px solid var(--accent);
+  border-radius: 16px; padding: 1.6rem; text-align: center; max-width: 420px; margin: 1.2rem auto 0;
+}
+.price { font-size: 2.2rem; font-weight: 800; }
+.price small { font-size: 1rem; font-weight: 400; color: var(--ink-2); }
+.price-box ul { list-style: none; margin: 1rem 0 1.4rem; padding: 0; color: var(--ink-2); font-size: .95rem; }
+.price-box li { margin: .35rem 0; }
+.price-box li::before { content: "✓ "; color: var(--good); font-weight: 700; }
+details {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: .9rem 1.1rem; margin-bottom: .6rem;
+}
+summary { font-weight: 600; cursor: pointer; }
+details p { margin-top: .6rem; color: var(--ink-2); font-size: .95rem; }
+footer { padding: 2.5rem 0 3.5rem; text-align: center; color: var(--muted); font-size: .82rem; }
+</style>
+</head>
+<body>
+
+<header class="hero wrap">
+  <h1>Aus dem Google-Ads-Export wird ein fertiger Kundenreport.<br>In 60 Sekunden.</h1>
+  <p class="sub">AdReport erstellt aus deinem normalen CSV-Export einen deutschen, kundenfertigen
+  Performance-Report — <strong>inklusive geschriebener Zusammenfassung und Empfehlungen</strong>,
+  nicht nur Charts.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="mailto:BETA@PLATZHALTER.DE?subject=AdReport%20Beta-Zugang">Beta-Zugang sichern — 19&nbsp;€</a>
+    <a class="btn btn-ghost" href="demo-report.html">Beispiel-Report ansehen</a>
+  </div>
+  <p class="hint">Einmalzahlung für die gesamte Beta-Phase · kein Abo · 14 Tage Geld zurück</p>
+</header>
+
+<section class="pain">
+  <div class="wrap">
+    <h2>Du kennst den letzten Arbeitstag des Monats.</h2>
+    <p>Daten exportieren. In Slides kopieren. Charts zurechtziehen. Und dann die eigentliche Arbeit:
+    dem Kunden <em>erklären</em>, was passiert ist und was ihr als Nächstes tut. 1–3 Stunden pro Kunde,
+    jeden Monat. Reporting-Tools wie AgencyAnalytics oder DashThis nehmen dir davon nur die Charts ab —
+    und kosten dafür laufend <strong>pro Kunde und Monat</strong>.</p>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Was AdReport anders macht</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>🧠 Der Kommentar wird mitgeliefert</h3>
+      <p>Gesamtentwicklung, stärkste und schwächste Kampagne, Budget-Empfehlungen, CPC-Auffälligkeiten —
+      als Fließtext, den du direkt an den Kunden schicken kannst.</p>
+    </div>
+    <div class="card">
+      <h3>🔒 Deine Kundendaten bleiben bei dir</h3>
+      <p>AdReport läuft lokal auf deinem Rechner. Kein Cloud-Upload, kein AV-Vertrag,
+      keine US-Datenübertragung — die einfachste DSGVO-Antwort, die es gibt.</p>
+    </div>
+    <div class="card">
+      <h3>⚡ Kein API-Setup, kein Login</h3>
+      <p>Kein Developer-Token, kein OAuth, keine Konten-Verknüpfung. Der CSV-Export,
+      den du sowieso ziehst, reicht.</p>
+    </div>
+    <div class="card">
+      <h3>💶 Einmal zahlen statt pro Kunde</h3>
+      <p>Kein Per-Client-Abo. Ob 3 oder 30 Kunden — der Preis bleibt gleich.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>So funktioniert's</h2>
+  <div class="steps">
+    <div class="step"><p>Kampagnenbericht aus Google Ads als CSV herunterladen — wie immer.</p></div>
+    <div class="step"><p>CSV auf AdReport ziehen (optional mit dem Vormonat für Vergleichswerte).</p></div>
+    <div class="step"><p>Fertigen Report öffnen, Kommentar kurz gegenlesen, an den Kunden senden. Fertig.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Beta-Zugang</h2>
+  <div class="price-box">
+    <div class="price">19&nbsp;€ <small>einmalig</small></div>
+    <ul>
+      <li>Voller Zugang für die gesamte Beta-Phase</li>
+      <li>Alle Updates der Beta inklusive</li>
+      <li>Dauerhafter Rabatt auf die finale Version</li>
+      <li>Direkter Draht: deine Wünsche prägen die Roadmap</li>
+      <li>14 Tage Geld-zurück, ohne Fragen</li>
+    </ul>
+    <a class="btn btn-primary" href="mailto:BETA@PLATZHALTER.DE?subject=AdReport%20Beta-Zugang">Beta-Zugang sichern</a>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Häufige Fragen</h2>
+  <details>
+    <summary>Welche Daten brauche ich?</summary>
+    <p>Den normalen Kampagnenbericht aus Google Ads (Spalten: Kampagne, Impressionen, Klicks, Kosten,
+    Conversions, optional Conv.-Wert). Deutsche Zahlenformate, Komma/Semikolon/Tab und die Gesamt-Zeile
+    werden automatisch erkannt.</p>
+  </details>
+  <details>
+    <summary>Funktioniert das auch für Meta Ads oder GA4?</summary>
+    <p>Noch nicht — Google Ads ist der Start. Meta-Ads- und GA4-Exporte stehen auf der Roadmap und
+    Beta-Nutzer entscheiden mit, was zuerst kommt.</p>
+  </details>
+  <details>
+    <summary>Wie wird der Kommentar erzeugt?</summary>
+    <p>Aus deinen Zahlen, deterministisch und nachvollziehbar (Effizienzschwellen, Vorperioden-Vergleiche,
+    Auffälligkeitsregeln). Ein optionaler KI-Feinschliff für Ton und Kundenkontext ist in Arbeit —
+    auch der bleibt optional, damit deine Daten lokal bleiben können.</p>
+  </details>
+  <details>
+    <summary>Was ist mit White-Label?</summary>
+    <p>Eigenes Logo und eigene Farben pro Agentur sind als eines der ersten Beta-Features geplant.</p>
+  </details>
+</section>
+
+<footer>
+  AdReport · Beta · Impressum &amp; Datenschutz folgen vor dem öffentlichen Launch
+</footer>
+
+</body>
+</html>
