@@ -1,0 +1,5 @@
+{
+  "schema": 1,
+  "notes": "Unternehmen, deren Bewertungsartikel auf kurssturzkompass.de nach Quartalszahlen automatisch neu geschrieben werden. Schema und Feldbedeutungen: siehe RUNBOOK.md. slug = exakter WordPress-Slug des Artikels. Neue Unternehmen hier eintragen und active auf true setzen.",
+  "companies": []
+}

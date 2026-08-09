@@ -1,0 +1,1 @@
+{"schema":1,"updated_at":null,"runs":[],"notes":"Pro Lauf wird höchstens ein Bewertungsartikel nach neuen Quartalszahlen neu geschrieben. Jeder Eintrag unter runs dokumentiert slug, quarter, manifest_version, report_date, status und verified_manifest. manifest.json ist der Rollback-Punkt."}
