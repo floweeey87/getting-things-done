@@ -3,7 +3,7 @@ name: Landingpage deployen
 on:
   push:
     branches: [master]
-    paths: ["adreport/landing/**"]
+    paths: ["reporthelden/landing/**"]
   workflow_dispatch:
 
 permissions:
@@ -28,6 +28,6 @@ jobs:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: adreport/landing
+          path: reporthelden/landing
       - id: deployment
         uses: actions/deploy-pages@v4

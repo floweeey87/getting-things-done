@@ -1,25 +1,25 @@
-# AdReport — Erste Schritte
+# ReportHelden — Erste Schritte
 
 Danke, dass du bei der Beta dabei bist! In 5 Minuten erstellst du deinen ersten Report.
 
 ## 1. Voraussetzung: Python (einmalig)
 
-AdReport läuft komplett auf deinem Rechner — dafür braucht es Python (kostenlos):
+ReportHelden läuft komplett auf deinem Rechner — dafür braucht es Python (kostenlos):
 
 - **Windows:** [python.org/downloads](https://www.python.org/downloads/) → Installer starten → **Haken bei „Add Python to PATH" setzen** → Installieren.
 - **macOS:** Python ist meist schon da. Prüfen: Terminal öffnen, `python3 --version` eintippen. Falls nicht: [python.org/downloads](https://www.python.org/downloads/).
 
-Mehr wird nicht installiert — AdReport selbst hat keine Abhängigkeiten.
+Mehr wird nicht installiert — ReportHelden selbst hat keine Abhängigkeiten.
 
-## 2. AdReport starten
+## 2. ReportHelden starten
 
 Zip entpacken, dann:
 
-- **Windows:** Doppelklick auf `AdReport starten.bat`
-- **macOS:** Doppelklick auf `AdReport starten.command`
+- **Windows:** Doppelklick auf `ReportHelden starten.bat`
+- **macOS:** Doppelklick auf `ReportHelden starten.command`
   (beim ersten Mal ggf. Rechtsklick → „Öffnen" wegen der Gatekeeper-Abfrage)
 
-Es öffnet sich ein Browserfenster mit der AdReport-Oberfläche. Alles läuft nur auf
+Es öffnet sich ein Browserfenster mit der ReportHelden-Oberfläche. Alles läuft nur auf
 deinem Rechner (localhost) — es werden keine Daten übertragen.
 
 ## 3. CSV exportieren
@@ -27,7 +27,7 @@ deinem Rechner (localhost) — es werden keine Daten übertragen.
 - **Google Ads:** Kampagnen-Übersicht → Download-Symbol → **CSV**. Zeitraum vorher auf den Berichtsmonat stellen.
 - **Meta Ads:** Werbeanzeigenmanager → Kampagnen-Tab → **Exportieren → Tabellendaten exportieren (CSV)**.
 
-Tipp: Exportiere gleich die letzten 2–3 Monate als einzelne Dateien — AdReport macht
+Tipp: Exportiere gleich die letzten 2–3 Monate als einzelne Dateien — ReportHelden macht
 daraus automatisch Vergleichswerte und Trendlinien.
 
 ## 4. Report erstellen
@@ -40,7 +40,7 @@ Kommentar kurz gegenlesen (er ist ein Vorschlag, kein Gesetz), dann:
 
 ## 5. Dein Branding (optional)
 
-Öffne `agentur.json` im AdReport-Ordner mit einem Texteditor:
+Öffne `agentur.json` im ReportHelden-Ordner mit einem Texteditor:
 
 ```json
 {

@@ -34,7 +34,7 @@ Die häufigste Antwort: „Slides, seufz."
 
 Deshalb habe ich mir ein Tool gebaut — und mache es jetzt als Beta auf:
 
-𝗔𝗱𝗥𝗲𝗽𝗼𝗿𝘁: CSV-Export aus Google Ads (oder Meta) reinziehen → fertiger deutscher
+𝗥𝗲𝗽𝗼𝗿𝘁𝗛𝗲𝗹𝗱𝗲𝗻: CSV-Export aus Google Ads (oder Meta) reinziehen → fertiger deutscher
 Kundenreport in unter einer Minute.
 
 Was es anders macht:
@@ -56,7 +56,7 @@ Beispiel-Report und Zugang: [LINK]
 
 ## Post 3 — Behind the scenes (nach ersten Beta-Nutzern)
 
-Learnings aus Woche 1 der AdReport-Beta:
+Learnings aus Woche 1 der ReportHelden-Beta:
 
 1. Der meistgenutzte „Feature-Wunsch" war keiner: Fast alle Beta-Nutzer wollten zuerst
 wissen, ob ihre Daten wirklich lokal bleiben. (Ja. Das Tool hat keinen Server —

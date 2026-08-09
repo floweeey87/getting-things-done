@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AdReport: erzeugt aus Google-Ads-Kampagnen-CSV-Exporten einen fertigen
+"""ReportHelden: erzeugt aus Google-Ads-Kampagnen-CSV-Exporten einen fertigen
 deutschen Kundenreport (eine HTML-Datei) — KPI-Kacheln, Kosten-Chart,
 Mehrmonats-Trends, Kampagnentabelle und generierter Kommentar.
 
@@ -57,7 +57,7 @@ DEFAULT_BRAND = {
     "logo": "",
     "accent": "#2a78d6",
     "accent_dark": "#3987e5",
-    "footer": "Erstellt mit AdReport · Daten wurden lokal verarbeitet und nicht an Dritte übertragen.",
+    "footer": "Erstellt mit ReportHelden · Daten wurden lokal verarbeitet und nicht an Dritte übertragen.",
 }
 
 

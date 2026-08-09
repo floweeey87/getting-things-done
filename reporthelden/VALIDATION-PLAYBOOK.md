@@ -1,14 +1,14 @@
-# AdReport · Validierungs-Playbook
+# ReportHelden · Validierungs-Playbook
 
 Ziel: **≥ 10 zahlende Beta-Nutzer (19 €) aus ≤ 100 Ansprachen**, bevor weiter gebaut wird. Dieses Playbook enthält alles, was für die Durchführung nötig ist.
 
 ## Vorbereitung (einmalig, ~1 Stunde)
 
 1. **Landingpage live stellen:** Deployment ist automatisiert — nach dem Merge nach `master` veröffentlicht der Workflow `.github/workflows/deploy-landing.yml` den Ordner `landing/` auf GitHub Pages (URL steht danach im Actions-Log; eigene Domain optional in den Repo-Settings). Vorher zwei Dinge erledigen: (a) in `index.html` den Platzhalter `BETA@PLATZHALTER.DE` durch den Zahlungslink ersetzen, (b) in `impressum.html` und `datenschutz.html` die gelb markierten `[PLATZHALTER]` mit echten Angaben füllen — **ohne Impressum keine Ads schalten (Abmahnrisiko)**.
-2. **Zahlungslink statt Mail-CTA (empfohlen):** Stripe Payment Link oder LemonSqueezy-Produkt „AdReport Beta — 19 €" anlegen und als CTA-Ziel eintragen. Zahlung ist das einzige Validierungssignal, das zählt.
+2. **Zahlungslink statt Mail-CTA (empfohlen):** Stripe Payment Link oder LemonSqueezy-Produkt „ReportHelden Beta — 19 €" anlegen und als CTA-Ziel eintragen. Zahlung ist das einzige Validierungssignal, das zählt.
 3. **Eigenen Report erzeugen:** Einen echten (anonymisierten) Kunden-Export durch den Generator jagen. Der eigene „Wow, das ist mein Report"-Moment ist der beste Pitch — und deckt Parser-Lücken auf.
 
-**Auslieferung nach Zahlung:** `python3 package.py` erzeugt `dist/adreport-beta.zip` —
+**Auslieferung nach Zahlung:** `python3 package.py` erzeugt `dist/reporthelden-beta.zip` —
 per Mail verschicken oder als Download hinter den Zahlungslink legen. Die Anleitung im
 Paket beantwortet Installation, Export und Branding, sodass kein Support-Ping nötig ist.
 

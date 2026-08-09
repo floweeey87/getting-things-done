@@ -17,7 +17,7 @@ Stand: 2026-08-09 · Fortsetzung von [SAAS-RESEARCH.md](SAAS-RESEARCH.md), jetzt
 | 3 | DSGVO-Formulare/-Terminbuchung | vorhanden | **Geschlossen** (meetergo, Zeeg, Formbricks, Tally u. a.) | mittel |
 | 4 | Linktree/Bitly-Klone | gering (Race to zero) | keine | hoch, aber irrelevant — Distributions-Business |
 
-## Entscheidung: #1 — „AdReport" (Arbeitstitel)
+## Entscheidung: #1 — „ReportHelden" (reporthelden.de)
 
 **Der Schmerz:** Jeder PPC-Freelancer verliert pro Kunde und Monat 1–3 Stunden für den Monatsreport — Daten exportieren, in Slides/Sheets hübsch machen, und vor allem: den „Was ist passiert und warum"-Text schreiben. Die etablierten Tools (DashThis, Whatagraph, AgencyAnalytics, Reporting Ninja) automatisieren nur die Charts, nicht den Kommentar — und kosten dafür laufend pro Kunde.
 
@@ -30,7 +30,7 @@ Stand: 2026-08-09 · Fortsetzung von [SAAS-RESEARCH.md](SAAS-RESEARCH.md), jetzt
 
 ## Validierungsplan (vor weiterem Ausbau)
 
-1. **MVP zeigen, nicht beschreiben:** Der Generator in [`adreport/`](adreport/README.md) erzeugt aus einem echten CSV-Export in Sekunden einen fertigen Report — das Demo-Artefakt ist das Verkaufsargument.
+1. **MVP zeigen, nicht beschreiben:** Der Generator in [`reporthelden/`](reporthelden/README.md) erzeugt aus einem echten CSV-Export in Sekunden einen fertigen Report — das Demo-Artefakt ist das Verkaufsargument.
 2. **20 Gespräche** mit PPC-Freelancern/Kleinst-Agenturen (LinkedIn, Communities): Wie machst du Reports heute? Was kostet dich das? Würdest du für „CSV rein, fertiger Report mit Kommentar raus" zahlen?
 3. **Zahlungssignal statt Meinungen:** Beta-Zugang gegen kleinen Betrag (9–19 €) statt kostenloser Warteliste — die Recherche ist eindeutig: Nur „already paying" zählt als Validierung.
 4. **Schwelle:** ≥ 10 zahlende Beta-Nutzer aus ≤ 100 Ansprachen → weiterbauen (Meta-Ads-Import, PDF-Export, White-Label). Darunter → Positionierung prüfen, bevor mehr gebaut wird.

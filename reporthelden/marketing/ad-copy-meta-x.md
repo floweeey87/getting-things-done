@@ -29,7 +29,7 @@ alternativ Split-Bild „Slides-Chaos vs. fertiger Report".
 **Primärtext:**
 1–3 Stunden pro Kunde. Jeden Monat. Für einen Report, den du zu 80 % genauso schon letzten Monat gebaut hast.
 
-AdReport macht daraus eine Minute: Google-Ads-CSV reinziehen → fertiger deutscher Kundenreport. Mit Vormonats-Vergleich, Trendlinien — und der Zusammenfassung samt Empfehlungen schon vorgeschrieben. Du liest gegen, statt neu zu schreiben.
+ReportHelden macht daraus eine Minute: Google-Ads-CSV reinziehen → fertiger deutscher Kundenreport. Mit Vormonats-Vergleich, Trendlinien — und der Zusammenfassung samt Empfehlungen schon vorgeschrieben. Du liest gegen, statt neu zu schreiben.
 
 Beta: 19 € einmalig statt Abo. 14 Tage Geld zurück.
 
@@ -41,7 +41,7 @@ Beta: 19 € einmalig statt Abo. 14 Tage Geld zurück.
 **Primärtext:**
 Dein Reporting-Tool braucht keinen Zugriff auf deine Kundenkonten.
 
-AdReport läuft komplett lokal auf deinem Rechner: CSV-Export rein, fertiger Kundenreport raus — inklusive geschriebener Zusammenfassung und Empfehlungen. Kein Cloud-Upload, kein AV-Vertrag, keine API-Freigaben. Die einfachste DSGVO-Antwort, die es im PPC-Reporting gibt.
+ReportHelden läuft komplett lokal auf deinem Rechner: CSV-Export rein, fertiger Kundenreport raus — inklusive geschriebener Zusammenfassung und Empfehlungen. Kein Cloud-Upload, kein AV-Vertrag, keine API-Freigaben. Die einfachste DSGVO-Antwort, die es im PPC-Reporting gibt.
 
 Google Ads + Meta Ads, White-Label, Trends. Beta: 19 € einmalig.
 
@@ -53,7 +53,7 @@ Google Ads + Meta Ads, White-Label, Trends. Beta: 19 € einmalig.
 **Primärtext:**
 Rechne kurz mit: 20 $ pro Kunde × 10 Kunden × 12 Monate = 2.400 $ — nur fürs Reporting-Tool. Und den Kommentar für den Kunden schreibst du trotzdem noch selbst.
 
-AdReport kostet einmal 19 € in der Beta. Für alle Kunden. Und der Kommentar — Zusammenfassung, stärkste/schwächste Kampagne, Budget-Empfehlung — wird mitgeliefert.
+ReportHelden kostet einmal 19 € in der Beta. Für alle Kunden. Und der Kommentar — Zusammenfassung, stärkste/schwächste Kampagne, Budget-Empfehlung — wird mitgeliefert.
 
 Ob 3 oder 30 Kunden: gleicher Preis. 14 Tage Geld zurück.
 
@@ -65,7 +65,7 @@ Ob 3 oder 30 Kunden: gleicher Preis. 14 Tage Geld zurück.
 **Primärtext:**
 Du erstellst gleich einen Report über die Anzeige, die du gerade siehst? Verstehen wir.
 
-AdReport baut aus deinem Werbeanzeigenmanager- oder Google-Ads-Export in einer Minute den fertigen Kundenreport — Quelle wird automatisch erkannt, Kommentar mit Empfehlungen inklusive, alles lokal auf deinem Rechner.
+ReportHelden baut aus deinem Werbeanzeigenmanager- oder Google-Ads-Export in einer Minute den fertigen Kundenreport — Quelle wird automatisch erkannt, Kommentar mit Empfehlungen inklusive, alles lokal auf deinem Rechner.
 
 Beta für PPC-Freelancer: 19 € einmalig, Roadmap bestimmst du mit.
 
@@ -82,7 +82,7 @@ Ton auf X: direkter, zahlenlastig, kein Emoji-Teppich. Creative auch hier: Repor
 
 > Monatsreport für einen PPC-Kunden: 1–3 Stunden.
 >
-> Mit AdReport: CSV-Export reinziehen, 1 Minute warten, gegenlesen, senden. Zusammenfassung + Empfehlungen sind schon geschrieben.
+> Mit ReportHelden: CSV-Export reinziehen, 1 Minute warten, gegenlesen, senden. Zusammenfassung + Empfehlungen sind schon geschrieben.
 >
 > Beta für PPC-Freelancer: 19 € einmalig. [LINK]
 
@@ -90,7 +90,7 @@ Ton auf X: direkter, zahlenlastig, kein Emoji-Teppich. Creative auch hier: Repor
 
 > PPC-Reporting-Tools wollen API-Zugriff auf deine Kundenkonten und einen AV-Vertrag.
 >
-> AdReport will ein CSV. Läuft lokal, überträgt nichts, fertiger deutscher Kundenreport in 1 Minute — Kommentar inklusive.
+> ReportHelden will ein CSV. Läuft lokal, überträgt nichts, fertiger deutscher Kundenreport in 1 Minute — Kommentar inklusive.
 >
 > Beta: 19 € einmalig. [LINK]
 
@@ -98,7 +98,7 @@ Ton auf X: direkter, zahlenlastig, kein Emoji-Teppich. Creative auch hier: Repor
 
 > Reporting-SaaS: 20 $/Kunde/Monat. Bei 10 Kunden 2.400 $/Jahr — und den Kundenkommentar schreibst du weiter selbst.
 >
-> AdReport: 19 € einmalig, alle Kunden, Kommentar wird mitgeliefert.
+> ReportHelden: 19 € einmalig, alle Kunden, Kommentar wird mitgeliefert.
 >
 > Beta ist offen: [LINK]
 

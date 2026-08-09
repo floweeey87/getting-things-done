@@ -1,6 +1,6 @@
-# AdReport — Google-Ads-Kundenreports aus dem CSV-Export
+# ReportHelden — Google-Ads-Kundenreports aus dem CSV-Export
 
-**CSV rein, fertiger Kundenreport raus.** AdReport verwandelt einen normalen Google-Ads-Kampagnen-Export in einen deutschsprachigen, kundenfertigen Performance-Report — inklusive automatisch generierter Zusammenfassung und Empfehlungen.
+**CSV rein, fertiger Kundenreport raus.** ReportHelden verwandelt einen normalen Google-Ads-Kampagnen-Export in einen deutschsprachigen, kundenfertigen Performance-Report — inklusive automatisch generierter Zusammenfassung und Empfehlungen.
 
 Positionierung siehe [MARKET-OPPORTUNITY.md](../MARKET-OPPORTUNITY.md): der Angriff auf Per-Client-Abos von AgencyAnalytics ($20/Kunde/Monat), DashThis & Co. — mit drei Differenzierern, die kein Incumbent hat:
 
@@ -13,7 +13,7 @@ Positionierung siehe [MARKET-OPPORTUNITY.md](../MARKET-OPPORTUNITY.md): der Angr
 **Ohne Terminal (empfohlen für die Beta):**
 
 ```bash
-python3 adreport/app.py
+python3 reporthelden/app.py
 ```
 
 Öffnet eine lokale Drag-&-Drop-Oberfläche im Browser (nur localhost, keine Datenübertragung).
@@ -24,13 +24,13 @@ neben `app.py`, wird sie automatisch als White-Label-Konfiguration verwendet.
 
 ```bash
 # Einzelne Monate
-python3 adreport/build_report.py aktuell.csv vorperiode.csv --kunde "Beispiel GmbH" -o report.html
+python3 reporthelden/build_report.py aktuell.csv vorperiode.csv --kunde "Beispiel GmbH" -o report.html
 
 # Ordner mit Monats-Exporten -> automatisch Mehrmonats-Trends
-python3 adreport/build_report.py exports/ --kunde "Beispiel GmbH"
+python3 reporthelden/build_report.py exports/ --kunde "Beispiel GmbH"
 
 # White-Label (Logo, Farben, Agenturname) und KI-Feinschliff
-python3 adreport/build_report.py exports/ --brand agentur.json --ai
+python3 reporthelden/build_report.py exports/ --brand agentur.json --ai
 ```
 
 - `aktuell.csv` — Kampagnenbericht aus **Google Ads** (Berichte → Kampagnen → CSV) oder **Meta Ads** (Werbeanzeigenmanager → Exportieren). Die Quelle wird automatisch am Header erkannt; Google braucht `Kampagne, Kosten` (plus Impressionen/Klicks/Conversions), Meta `Kampagnenname, Ausgegebener Betrag` (plus Link-Klicks/Ergebnisse/Conversion-Wert).
@@ -40,10 +40,10 @@ python3 adreport/build_report.py exports/ --brand agentur.json --ai
 Beispiel ausprobieren:
 
 ```bash
-python3 adreport/build_report.py \
-    adreport/sample-data/kampagnen-juli-2026.csv \
-    adreport/sample-data/kampagnen-juni-2026.csv \
-    --kunde "Beispiel GmbH" -o adreport/dist/beispiel-report.html
+python3 reporthelden/build_report.py \
+    reporthelden/sample-data/kampagnen-juli-2026.csv \
+    reporthelden/sample-data/kampagnen-juni-2026.csv \
+    --kunde "Beispiel GmbH" -o reporthelden/dist/beispiel-report.html
 ```
 
 ## Was der Report enthält
@@ -59,7 +59,7 @@ python3 adreport/build_report.py \
 ## Beta-Auslieferung
 
 ```bash
-python3 adreport/package.py   # erzeugt dist/adreport-beta.zip
+python3 reporthelden/package.py   # erzeugt dist/reporthelden-beta.zip
 ```
 
 Das Zip enthält App, Generator, [Kundenanleitung](ANLEITUNG.md), Ein-Klick-Starter für
@@ -70,7 +70,7 @@ der Zahlung bekommen. SEO-Artikel und LinkedIn-Posts für den Launch liegen in
 ## Tests
 
 ```bash
-cd adreport && python3 -m unittest test_adreport -v
+cd reporthelden && python3 -m unittest test_reporthelden -v
 ```
 
 20 Tests decken beide Parser (Google/Meta), deutsche und englische Zahlenformate,

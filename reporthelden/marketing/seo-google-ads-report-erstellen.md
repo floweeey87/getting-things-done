@@ -32,7 +32,7 @@ Ein Report, den Kunden tatsächlich lesen, beantwortet drei Fragen — in dieser
 
 **Lokale Automatisierung (CSV-basiert):** Der Mittelweg, der beide Probleme löst: Du exportierst wie gewohnt das Kampagnen-CSV aus Google Ads, ein lokales Tool baut daraus den fertigen Report — inklusive KPI-Vergleich, Trends und einem generierten Kommentar-Entwurf, den du nur noch gegenliest. Keine API-Freigaben, keine Cloud, keine laufenden Kundendaten-Übertragungen: Was auf deinem Rechner bleibt, braucht keinen AV-Vertrag.
 
-Genau dafür haben wir [AdReport](../landing/index.html) gebaut: CSV-Export reinziehen, Kundennamen eintragen, fertiger deutscher Report mit Zusammenfassung und Empfehlungen — in unter einer Minute, mit deinem Agentur-Branding, zum Einmalpreis statt Per-Client-Abo. Auch Meta-Ads-Exporte werden automatisch erkannt.
+Genau dafür haben wir [ReportHelden](../landing/index.html) gebaut: CSV-Export reinziehen, Kundennamen eintragen, fertiger deutscher Report mit Zusammenfassung und Empfehlungen — in unter einer Minute, mit deinem Agentur-Branding, zum Einmalpreis statt Per-Client-Abo. Auch Meta-Ads-Exporte werden automatisch erkannt.
 
 ## Checkliste: Der 5-Minuten-Monatsreport
 

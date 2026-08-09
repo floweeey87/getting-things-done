@@ -21,13 +21,13 @@ AgencyAnalytics, DashThis, Whatagraph, Swydo — die Reporting-SaaS-Landschaft i
 | AgencyAnalytics / DashThis / Whatagraph | laufend, meist pro Kunde | ❌ Charts ja, Text nein | AV-Vertrag, US-Transfer |
 | Looker Studio (kostenlos) | 0 € + viel Einrichtungszeit | ❌ | Google-Konten-Verknüpfung |
 | Slides/Excel von Hand | 1–3 Std. pro Kunde/Monat | ✅ (du schreibst ihn ja) | keiner |
-| **Lokales CSV-Tool (AdReport)** | **Einmalpreis, alle Kunden** | **✅ generierter Entwurf** | **keiner — Daten bleiben lokal** |
+| **Lokales CSV-Tool (ReportHelden)** | **Einmalpreis, alle Kunden** | **✅ generierter Entwurf** | **keiner — Daten bleiben lokal** |
 
 ## Der lokale Ansatz: Warum „kein Cloud-Upload" das Feature ist
 
 Ein Reporting-Tool braucht keine Standleitung zu deinen Kundenkonten. Die Daten, die in einen Monatsreport gehören, stecken vollständig im Kampagnen-CSV, das Google Ads und der Meta-Werbeanzeigenmanager ohnehin exportieren. Ein Tool, das dieses CSV **lokal auf deinem Rechner** verarbeitet, dreht die DSGVO-Frage um: Es gibt schlicht keine Datenübertragung, die man vertraglich regeln müsste.
 
-[AdReport](../landing/index.html) ist genau das: Du ziehst den CSV-Export in ein lokales Fenster, das Tool erkennt automatisch, ob es ein Google-Ads- oder Meta-Ads-Export ist, und erzeugt einen fertigen deutschen Kundenreport — KPI-Vergleich zur Vorperiode, Trendlinien über mehrere Monate, Kampagnentabelle und einen **generierten Kommentar mit konkreten Empfehlungen** (welche Kampagne unter der Effizienzschwelle liegt, wohin Budget wandern sollte, welche CPC-Sprünge auffallen). Mit deinem Logo und deinen Farben, zum Einmalpreis — ob du 3 oder 30 Kunden hast.
+[ReportHelden](../landing/index.html) ist genau das: Du ziehst den CSV-Export in ein lokales Fenster, das Tool erkennt automatisch, ob es ein Google-Ads- oder Meta-Ads-Export ist, und erzeugt einen fertigen deutschen Kundenreport — KPI-Vergleich zur Vorperiode, Trendlinien über mehrere Monate, Kampagnentabelle und einen **generierten Kommentar mit konkreten Empfehlungen** (welche Kampagne unter der Effizienzschwelle liegt, wohin Budget wandern sollte, welche CPC-Sprünge auffallen). Mit deinem Logo und deinen Farben, zum Einmalpreis — ob du 3 oder 30 Kunden hast.
 
 ## Für wen sich was eignet
 

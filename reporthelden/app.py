@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AdReport-App: lokale Drag-&-Drop-Oberfläche für den Report-Generator.
+"""ReportHelden-App: lokale Drag-&-Drop-Oberfläche für den Report-Generator.
 
 Startet einen Server, der ausschließlich auf localhost lauscht — Kundendaten
 verlassen den Rechner nicht. Kein Terminal-Wissen nötig:
@@ -27,7 +27,7 @@ PAGE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AdReport</title>
+<title>ReportHelden</title>
 <style>
 :root {
   color-scheme: light;
@@ -72,7 +72,7 @@ button:disabled { opacity: .45; cursor: default; }
 </head>
 <body>
 <main>
-<h1>AdReport</h1>
+<h1>ReportHelden</h1>
 <p class="sub">Google-Ads- oder Meta-Ads-Exporte rein, fertiger Kundenreport raus.</p>
 <form method="post" action="/report" enctype="multipart/form-data">
   <div class="drop" id="drop">
@@ -191,7 +191,7 @@ class Handler(BaseHTTPRequestHandler):
 def main() -> int:
     server = HTTPServer((HOST, PORT), Handler)
     url = f"http://{HOST}:{PORT}"
-    print(f"AdReport läuft auf {url} — Fenster schließen mit Strg+C.")
+    print(f"ReportHelden läuft auf {url} — Fenster schließen mit Strg+C.")
     try:
         webbrowser.open(url)
     except Exception:

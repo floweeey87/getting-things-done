@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Test-Suite für AdReport: Parser (beide Quellen), Zahlenformate,
+"""Test-Suite für ReportHelden: Parser (beide Quellen), Zahlenformate,
 Kommentar-Regeln, Rendering und den Multipart-Parser der App.
 
-    python3 -m unittest test_adreport -v
+    python3 -m unittest test_reporthelden -v
 """
 
 import tempfile
