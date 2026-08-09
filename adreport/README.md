@@ -21,7 +21,7 @@ python3 adreport/build_report.py exports/ --kunde "Beispiel GmbH"
 python3 adreport/build_report.py exports/ --brand agentur.json --ai
 ```
 
-- `aktuell.csv` — Kampagnenbericht aus Google Ads (Berichte → Kampagnen → Herunterladen als CSV). Erwartete Spalten: `Kampagne, Impressionen, Klicks, Kosten, Conversions` (optional `Conv.-Wert`).
+- `aktuell.csv` — Kampagnenbericht aus **Google Ads** (Berichte → Kampagnen → CSV) oder **Meta Ads** (Werbeanzeigenmanager → Exportieren). Die Quelle wird automatisch am Header erkannt; Google braucht `Kampagne, Kosten` (plus Impressionen/Klicks/Conversions), Meta `Kampagnenname, Ausgegebener Betrag` (plus Link-Klicks/Ergebnisse/Conversion-Wert).
 - `vorperiode.csv` — optional; aktiviert Vergleichs-Deltas an den KPI-Kacheln und im Kommentar.
 - Der Parser ist tolerant: Vorspannzeilen, `Gesamt`-Zeile, Komma/Semikolon/Tab und deutsche Zahlenformate werden automatisch erkannt.
 
@@ -46,6 +46,6 @@ python3 adreport/build_report.py \
 
 ## Roadmap
 
-- ✅ White-Label, Mehrmonats-Trends, KI-Feinschliff
-- Meta-Ads- und GA4-Exporte als weitere Quellen
+- ✅ White-Label, Mehrmonats-Trends, KI-Feinschliff, Meta-Ads-Import
+- GA4-Exporte als weitere Quelle
 - PDF-Export ohne Druckdialog

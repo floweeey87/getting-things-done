@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Performance-Report · Meta-Test</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --border: rgba(11,11,11,.10);
+  --accent: #2a78d6; --good: #006300; --bad: #d03b3b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19;
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --border: rgba(255,255,255,.10);
+    --accent: #3987e5; --good: #0ca30c; --bad: #e66767;
+  }
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--page); color: var(--ink);
+  max-width: 880px; margin: 0 auto; padding: 2.5rem 1.2rem 4rem;
+  line-height: 1.55;
+}
+header { margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
+.logo { height: 44px; width: auto; }
+h1 { font-size: 1.5rem; }
+.zeitraum { color: var(--ink-2); margin-top: .2rem; }
+.agentur { margin-left: auto; color: var(--muted); font-size: .85rem; }
+h2 { font-size: 1.05rem; margin: 2.2rem 0 .9rem; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; }
+.tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: .9rem 1rem; display: flex; flex-direction: column; gap: .15rem;
+}
+.tile-label { font-size: .8rem; color: var(--ink-2); }
+.tile-value { font-size: 1.45rem; font-weight: 700; }
+.delta { font-size: .8rem; font-weight: 600; }
+.delta em { font-style: normal; font-weight: 400; color: var(--muted); }
+.delta-good { color: var(--good); }
+.delta-bad { color: var(--bad); }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.1rem 1.2rem;
+}
+.trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
+.trend-head { display: flex; justify-content: space-between; align-items: baseline; }
+.trend-name { font-size: .85rem; color: var(--ink-2); }
+.trend-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+.trend-cell svg { width: 100%; height: auto; margin-top: .3rem; }
+.trend-axis { display: flex; justify-content: space-between;
+  font-size: .72rem; color: var(--muted); }
+.bar-row {
+  display: grid; grid-template-columns: minmax(120px, 220px) 1fr 110px;
+  align-items: center; gap: .7rem; padding: .3rem 0; border-radius: 6px;
+}
+.bar-row:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.bar-name { font-size: .85rem; color: var(--ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { position: relative; height: 14px; }
+.bar-fill {
+  position: absolute; inset: 0 auto 0 0; background: var(--accent);
+  border-radius: 0 4px 4px 0; min-width: 3px;
+}
+.bar-value { font-size: .85rem; text-align: right; font-variant-numeric: tabular-nums; }
+.kommentar p + p { margin-top: .8rem; }
+table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+th, td { padding: .45rem .6rem; text-align: right;
+  border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink-2); font-weight: 600; }
+tr.total td { font-weight: 700; border-top: 2px solid var(--muted); }
+tr:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.table-wrap { overflow-x: auto; }
+footer { margin-top: 3rem; color: var(--muted); font-size: .78rem; }
+@media print { body { max-width: none; } .card, .tile { border-color: #ccc; } }
+</style>
+</head>
+<body>
+<header>
+  
+  <div>
+    <h1>Performance-Report · Meta-Test</h1>
+    <p class="zeitraum">Meta Ads · Juli 2026</p>
+  </div>
+  
+</header>
+
+<section class="tiles">
+<div class="tile"><span class="tile-label">Werbekosten</span><span class="tile-value">8.252,50 €</span></div>
+<div class="tile"><span class="tile-label">Conversions</span><span class="tile-value">426</span></div>
+<div class="tile"><span class="tile-label">Umsatz (Conv.-Wert)</span><span class="tile-value">37.610,00 €</span></div>
+<div class="tile"><span class="tile-label">ROAS</span><span class="tile-value">4,56</span></div>
+</section>
+
+<h2>Zusammenfassung &amp; Empfehlungen</h2>
+<div class="card kommentar">
+<p>Im Berichtszeitraum wurden 8.252,50 € investiert und 426 Conversions mit einem Wert von 37.610,00 € erzielt (ROAS 4,56).</p>
+<p>Stärkste Kampagne nach Effizienz war „Retargeting Websitebesucher 30T“ mit einem ROAS von 10,03. Am schwächsten schnitt „Reels Awareness Sommer“ ab (ROAS 1,19 bei 1.410,70 € Kosten).</p>
+<p>Unter der Effizienzschwelle (ROAS &lt; 1,5) liegt: „Reels Awareness Sommer“. Empfehlung: Budget schrittweise in die effizienteren Kampagnen (z. B. „Conversion Prospecting Interessen“) verlagern oder Ausrichtung und Gebote der schwachen Kampagne überarbeiten.</p>
+</div>
+
+
+
+<h2>Kosten je Kampagne</h2>
+<div class="card">
+<div class="bar-row" title="Conversion Prospecting Interessen: 3.240,60 €, ROAS 4,57"><span class="bar-name">Conversion Prospecting Interessen</span><span class="bar-track"><span class="bar-fill" style="width:100.0%"></span></span><span class="bar-value">3.240,60 €</span></div>
+<div class="bar-row" title="Lookalike Käufer 2%: 2.480,90 €, ROAS 3,98"><span class="bar-name">Lookalike Käufer 2%</span><span class="bar-track"><span class="bar-fill" style="width:76.6%"></span></span><span class="bar-value">2.480,90 €</span></div>
+<div class="bar-row" title="Reels Awareness Sommer: 1.410,70 €, ROAS 1,19"><span class="bar-name">Reels Awareness Sommer</span><span class="bar-track"><span class="bar-fill" style="width:43.5%"></span></span><span class="bar-value">1.410,70 €</span></div>
+<div class="bar-row" title="Retargeting Websitebesucher 30T: 1.120,30 €, ROAS 10,03"><span class="bar-name">Retargeting Websitebesucher 30T</span><span class="bar-track"><span class="bar-fill" style="width:34.6%"></span></span><span class="bar-value">1.120,30 €</span></div>
+</div>
+
+<h2>Alle Kampagnen im Detail</h2>
+<div class="card table-wrap">
+<table>
+<tr><th>Kampagne</th><th>Impr.</th><th>Klicks</th><th>CTR</th><th>Ø-CPC</th>
+<th>Kosten</th><th>Conv.</th><th>Kosten/Conv.</th><th>ROAS</th></tr>
+<tr><td>Conversion Prospecting Interessen</td><td>412.800</td><td>8.120</td><td>1,97 %</td><td>0,40 €</td><td>3.240,60 €</td><td>176</td><td>18,41 €</td><td>4,57</td></tr>
+<tr><td>Lookalike Käufer 2%</td><td>287.600</td><td>5.230</td><td>1,82 %</td><td>0,47 €</td><td>2.480,90 €</td><td>114</td><td>21,76 €</td><td>3,98</td></tr>
+<tr><td>Reels Awareness Sommer</td><td>634.200</td><td>4.870</td><td>0,77 %</td><td>0,29 €</td><td>1.410,70 €</td><td>22</td><td>64,12 €</td><td>1,19</td></tr>
+<tr><td>Retargeting Websitebesucher 30T</td><td>98.400</td><td>3.410</td><td>3,47 %</td><td>0,33 €</td><td>1.120,30 €</td><td>114</td><td>9,83 €</td><td>10,03</td></tr>
+<tr class='total'><td>Gesamt</td><td>1.433.000</td><td>21.630</td><td>1,51 %</td><td>0,38 €</td><td>8.252,50 €</td><td>426</td><td>19,37 €</td><td>4,56</td></tr>
+</table>
+</div>
+
+<footer>Erstellt mit AdReport · Daten wurden lokal verarbeitet und nicht an Dritte übertragen.</footer>
+</body>
+</html>

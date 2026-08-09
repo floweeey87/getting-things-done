@@ -30,7 +30,27 @@ import os
 import sys
 from pathlib import Path
 
-REQUIRED = ["Kampagne", "Impressionen", "Klicks", "Kosten", "Conversions"]
+# Spalten-Mappings je Quelle: interner Name -> Liste möglicher Spalten-Präfixe.
+SOURCES = {
+    "Meta Ads": {
+        "detect": ["Kampagnenname", "Ausgegebener Betrag"],
+        "name": ["Kampagnenname"],
+        "impressionen": ["Impressionen"],
+        "klicks": ["Link-Klicks", "Klicks (alle)", "Klicks"],
+        "kosten": ["Ausgegebener Betrag"],
+        "conversions": ["Ergebnisse", "K\u00e4ufe", "Conversions"],
+        "conv_wert": ["Conversion-Wert", "Kaufwert"],
+    },
+    "Google Ads": {
+        "detect": ["Kampagne", "Kosten"],
+        "name": ["Kampagne"],
+        "impressionen": ["Impressionen"],
+        "klicks": ["Klicks"],
+        "kosten": ["Kosten"],
+        "conversions": ["Conversions"],
+        "conv_wert": ["Conv.-Wert", "Conv-Wert"],
+    },
+}
 
 DEFAULT_BRAND = {
     "agentur": "",
@@ -60,34 +80,56 @@ def parse_export(path: Path) -> dict:
     """Liest einen Google-Ads-Export: tolerant gegenüber Vorspannzeilen,
     Trennzeichen (Komma/Semikolon/Tab) und einer 'Gesamt'-Zeile."""
     lines = path.read_text(encoding="utf-8-sig").splitlines()
-    header_idx = next(
-        (i for i, l in enumerate(lines) if "Kampagne" in l and ("Klicks" in l or "Kosten" in l)),
-        None,
-    )
+    header_idx, source = None, None
+    for i, l in enumerate(lines):
+        for src, spec in SOURCES.items():
+            if all(marker in l for marker in spec["detect"]):
+                header_idx, source = i, src
+                break
+        if source:
+            break
     if header_idx is None:
-        raise SystemExit(f"{path}: keine Kopfzeile mit 'Kampagne' gefunden.")
+        raise SystemExit(f"{path}: keine bekannte Kopfzeile gefunden "
+                         f"(unterst\u00fctzt: {', '.join(SOURCES)}).")
+    spec = SOURCES[source]
 
     zeitraum = lines[header_idx - 1].strip() if header_idx >= 2 else ""
     body = "\n".join(lines[header_idx:])
     delimiter = max([",", ";", "\t"], key=lines[header_idx].count)
     reader = csv.DictReader(io.StringIO(body), delimiter=delimiter)
+    fields = reader.fieldnames or []
 
-    missing = [c for c in REQUIRED if c not in (reader.fieldnames or [])]
+    def col(key: str) -> str | None:
+        for prefix in spec[key]:
+            if prefix in fields:
+                return prefix
+        for prefix in spec[key]:
+            for f in fields:
+                if f.startswith(prefix):
+                    return f
+        return None
+
+    cols = {k: col(k) for k in ("name", "impressionen", "klicks", "kosten",
+                                "conversions", "conv_wert")}
+    missing = [k for k in ("name", "kosten") if not cols[k]]
     if missing:
-        raise SystemExit(f"{path}: Spalten fehlen: {', '.join(missing)}")
+        raise SystemExit(f"{path} ({source}): Spalten fehlen: {', '.join(missing)}")
+
+    def val(row: dict, key: str) -> float:
+        return parse_number(row.get(cols[key] or "", "0") or "0")
 
     campaigns = []
     for row in reader:
-        name = (row.get("Kampagne") or "").strip()
-        if not name or name.lower().startswith("gesamt"):
+        name = (row.get(cols["name"]) or "").strip()
+        if not name or name.lower().startswith(("gesamt", "ergebnisse aus")):
             continue
         c = {
             "name": name,
-            "impressionen": parse_number(row.get("Impressionen", "0")),
-            "klicks": parse_number(row.get("Klicks", "0")),
-            "kosten": parse_number(row.get("Kosten", "0")),
-            "conversions": parse_number(row.get("Conversions", "0")),
-            "conv_wert": parse_number(row.get("Conv.-Wert", row.get("Conv-Wert", "0"))),
+            "impressionen": val(row, "impressionen"),
+            "klicks": val(row, "klicks"),
+            "kosten": val(row, "kosten"),
+            "conversions": val(row, "conversions"),
+            "conv_wert": val(row, "conv_wert"),
         }
         c["ctr"] = c["klicks"] / c["impressionen"] * 100 if c["impressionen"] else 0.0
         c["cpc"] = c["kosten"] / c["klicks"] if c["klicks"] else 0.0
@@ -102,8 +144,8 @@ def parse_export(path: Path) -> dict:
     total["ctr"] = total["klicks"] / total["impressionen"] * 100 if total["impressionen"] else 0.0
     total["cpc"] = total["kosten"] / total["klicks"] if total["klicks"] else 0.0
     total["roas"] = total["conv_wert"] / total["kosten"] if total["kosten"] else 0.0
-    return {"zeitraum": zeitraum, "campaigns": campaigns, "total": total,
-            "label": path.stem.replace("kampagnen-", "").replace("-", " ")}
+    return {"zeitraum": zeitraum, "campaigns": campaigns, "total": total, "source": source,
+            "label": path.stem.replace("kampagnen-", "").replace("meta-", "").replace("-", " ")}
 
 
 def load_inputs(paths: list[Path]) -> list[dict]:
@@ -484,7 +526,7 @@ footer {{ margin-top: 3rem; color: var(--muted); font-size: .78rem; }}
   {logo_html}
   <div>
     <h1>Performance-Report · {html.escape(kunde)}</h1>
-    <p class="zeitraum">Google Ads · {html.escape(zeitraum)}</p>
+    <p class="zeitraum">{html.escape(" + ".join(dict.fromkeys(h["source"] for h in history)))} · {html.escape(zeitraum)}</p>
   </div>
   {agentur_html}
 </header>
