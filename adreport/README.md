@@ -56,6 +56,17 @@ python3 adreport/build_report.py \
 - **KI-Feinschliff (optional):** `--ai` verfeinert den Kommentar über die Claude-API (`claude-opus-5`, mit Server-Side-Fallback). Gesendet werden nur aggregierte Kennzahlen, nie Rohdaten; ohne `ANTHROPIC_API_KEY` oder SDK bleibt der regelbasierte Kommentar bestehen. Benötigt `pip install anthropic`.
 - Eine einzige HTML-Datei, hell/dunkel automatisch, druckfähig (→ PDF über den Druckdialog).
 
+## Beta-Auslieferung
+
+```bash
+python3 adreport/package.py   # erzeugt dist/adreport-beta.zip
+```
+
+Das Zip enthält App, Generator, [Kundenanleitung](ANLEITUNG.md), Ein-Klick-Starter für
+Windows/macOS, White-Label-Vorlage und Beispieldaten — das Paket, das Beta-Käufer nach
+der Zahlung bekommen. SEO-Artikel und LinkedIn-Posts für den Launch liegen in
+[`marketing/`](marketing/).
+
 ## Tests
 
 ```bash

@@ -8,6 +8,10 @@ Ziel: **≥ 10 zahlende Beta-Nutzer (19 €) aus ≤ 100 Ansprachen**, bevor wei
 2. **Zahlungslink statt Mail-CTA (empfohlen):** Stripe Payment Link oder LemonSqueezy-Produkt „AdReport Beta — 19 €" anlegen und als CTA-Ziel eintragen. Zahlung ist das einzige Validierungssignal, das zählt.
 3. **Eigenen Report erzeugen:** Einen echten (anonymisierten) Kunden-Export durch den Generator jagen. Der eigene „Wow, das ist mein Report"-Moment ist der beste Pitch — und deckt Parser-Lücken auf.
 
+**Auslieferung nach Zahlung:** `python3 package.py` erzeugt `dist/adreport-beta.zip` —
+per Mail verschicken oder als Download hinter den Zahlungslink legen. Die Anleitung im
+Paket beantwortet Installation, Export und Branding, sodass kein Support-Ping nötig ist.
+
 ## Kanäle & Reihenfolge
 
 | Welle | Kanal | Ansprachen | Erwartung |
@@ -15,7 +19,7 @@ Ziel: **≥ 10 zahlende Beta-Nutzer (19 €) aus ≤ 100 Ansprachen**, bevor wei
 | 1 | Direktkontakte: bekannte PPC-Freelancer & Kleinst-Agenturen | 10–15 | ehrlichstes Feedback, 2–3 Käufe |
 | 2 | LinkedIn: Kommentierende unter PPC-/SEA-Posts (DACH), 1st/2nd-Degree | 40–50 | Kernkanal |
 | 3 | Communities: SEA-/PPC-Gruppen (Facebook/Slack/Discord), OMR-Community-Threads | 20–30 | Post + Demo-Link, kein Spam: erst Mehrwert, dann Link |
-| 4 | Eigener Kanal: kurzer LinkedIn-Post mit Demo-Report-Screenshot | 1 Post | Reichweiten-Test fürs spätere Marketing |
+| 4 | Eigener Kanal: LinkedIn-Posts (fertige Entwürfe in `marketing/linkedin-posts.md`) | 3 Posts | Post 1 vor Welle 2 veröffentlichen |
 
 ## Nachrichten-Vorlagen
 
