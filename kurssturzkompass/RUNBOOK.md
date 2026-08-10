@@ -14,6 +14,8 @@ kurssturzkompass/
   config/watchlist.json         – Unternehmen, die überwacht werden (Pflege durch Betreiber)
   templates/bewertung-artikel.md– Pflichtaufbau des Bewertungsartikels
   articles/article-NNN/part-XX.html – Quell-HTML des jeweils neu geschriebenen Artikels
+  scripts/earnings_due.py       – ermittelt, welches Unternehmen fällig ist (Quartalslogik)
+  scripts/validate_article.py   – prüft einen fertigen Artikel gegen die Pflichtregeln
   scripts/build_manifest.py     – baut manifest.json + ready.json aus einem Artikelverzeichnis
   content-sync/manifest.json    – versionierter Auslieferungsstand (Bridge liest hier)
   content-sync/ready.json       – Zeiger auf das aktuell auszuliefernde Update
@@ -26,27 +28,32 @@ kurssturzkompass/
 - `git fetch origin master && git checkout master && git pull origin master`
 - Alle Pfade sind relativ zu `kurssturzkompass/`.
 
-### 1. Watchlist prüfen
-- `config/watchlist.json` lesen.
-- Keine aktiven Unternehmen (`"active": true`) vorhanden → Lauf ohne Änderungen
-  beenden. Nichts committen.
+### 1. Fälligkeit ermitteln
+```
+python3 kurssturzkompass/scripts/earnings_due.py
+```
+Das Skript liest `config/watchlist.json`, berechnet je Unternehmen aus
+`fiscal_year_end` und `reporting_lag_days` das jüngste Quartal, dessen
+Berichtsfenster abgelaufen ist, und vergleicht es mit `last_processed_quarter`.
+Die Datumsrechnung gehört bewusst ins Skript und nicht in den Prompt, damit
+jeder Lauf zum selben Ergebnis kommt.
 
-### 2. Neue Quartalszahlen erkennen
-Für jedes aktive Unternehmen:
-- Erwartetes Berichtsfenster bestimmen: Quartalsende laut `fiscal_year_end`
-  plus `reporting_lag_days`.
-- Ist `last_processed_quarter` bereits das jüngste abgeschlossene Quartal → überspringen.
-- Sonst per Websuche prüfen, ob der Quartalsbericht inzwischen veröffentlicht ist
-  (Suchbegriffe: `<Name> Quartalszahlen Q<x> <Jahr>`, `<Name> quarterly results`,
-  IR-Pressemitteilung). Nur veröffentlichte, belegbare Zahlen zählen –
-  Terminankündigungen reichen nicht.
+Ausgabe „Kein Unternehmen fällig“ → Lauf ohne Änderungen und ohne Commit
+beenden. Sonst mit dem genannten Unternehmen weiterarbeiten (bei mehreren
+Fälligen nennt das Skript das mit dem ältesten offenen Quartal zuerst).
+
+### 2. Veröffentlichung bestätigen
+„Fällig“ heißt nur: Der Bericht müsste inzwischen vorliegen. Ob er
+tatsächlich veröffentlicht wurde, per Websuche prüfen (Suchbegriffe:
+`<Name> Quartalszahlen Q<x> <Jahr>`, `<Name> quarterly results`,
+IR-Pressemitteilung). Nur veröffentlichte, belegbare Zahlen zählen –
+Terminankündigungen reichen nicht.
+
+Bericht noch nicht veröffentlicht → Lauf ohne Änderungen beenden; das
+Unternehmen bleibt fällig und kommt im nächsten Lauf erneut dran.
 
 **Pro Lauf wird höchstens EIN Unternehmen verarbeitet** (gleiches Prinzip wie im
-PSH-Projekt: ein Artikel pro Lauf, sauber versioniert). Liegen mehrere neue
-Berichte vor, das Unternehmen mit dem ältesten Veröffentlichungsdatum zuerst;
-die übrigen kommen in den Folgeläufen dran.
-
-Kein Unternehmen mit neuen Zahlen → Lauf ohne Änderungen beenden.
+PSH-Projekt: ein Artikel pro Lauf, sauber versioniert).
 
 ### 3. Zahlen recherchieren
 Primärquelle ist immer die IR-Pressemitteilung bzw. der Quartalsbericht des
@@ -73,7 +80,17 @@ ausdrücklich als Schätzung markiert.
 - Pflicht am Artikelende: Risikohinweis/Disclaimer (keine Anlageberatung) und
   Abschnitt „Primärquellen und Datenstand“ mit Links und Datum.
 
-### 5. Manifest bauen
+### 5. Artikel prüfen
+```
+python3 kurssturzkompass/scripts/validate_article.py article-NNN
+```
+Prüft die Pflichtbestandteile (Kurzantwort, Kernfakten, Fazit, Primärquellen,
+Datenstand, Risikohinweis, Quellen-Links, Mindestlänge) und schlägt bei
+Formulierungen an, die als Empfehlung oder Versprechen gelesen werden können
+(Kursziel, „garantiert“, „jetzt kaufen“ …). Exit-Code ungleich 0 → Artikel
+korrigieren und erneut prüfen. **Erst bei Exit-Code 0 weiter zu Schritt 6.**
+
+### 6. Manifest bauen
 ```
 python3 kurssturzkompass/scripts/build_manifest.py \
   --source-dir article-NNN \
@@ -85,15 +102,17 @@ Das Skript erhöht die Version, schreibt `content-sync/manifest.json` und
 `content-sync/ready.json` und prüft die SHA256-Summe. Ausgabe kontrollieren:
 Version, Slug und Titel müssen in beiden Dateien übereinstimmen.
 
-### 6. Fortschritt festhalten
+### 7. Fortschritt festhalten
 - In `config/watchlist.json` beim verarbeiteten Unternehmen
-  `last_processed_quarter` (Format `Q<x>-<Jahr>`) und `last_processed_at`
-  (ISO-Zeitstempel) setzen.
+  `last_processed_quarter` und `last_processed_at` (ISO-Zeitstempel) setzen.
+  `last_processed_quarter` muss exakt das Label aus `earnings_due.py`
+  verwenden (Format `Q<x>-<Jahr>`, Jahr = Geschäftsjahr, in dem es endet) –
+  sonst erkennt der nächste Lauf das Quartal nicht wieder.
 - In `content-sync/earnings-progress.json` einen Eintrag unter `runs` ergänzen:
   `{"slug", "quarter", "manifest_version", "report_date", "status": "rewritten",
   "verified_manifest": true}` sowie `updated_at` und `notes` aktualisieren.
 
-### 7. Committen und pushen
+### 8. Committen und pushen
 Getrennte, klar benannte Commits (Muster wie im PSH-Projekt), z. B.:
 1. `Add KSK <name> Q<x>-<Jahr> valuation rewrite` (Artikelquellen)
 2. `Build KSK content manifest version <N>` (manifest + ready)
