@@ -38,7 +38,13 @@ python3 reporthelden/build_report.py exports/ --pdf
 
 - `aktuell.csv` — Kampagnenbericht aus **Google Ads** (Berichte → Kampagnen → CSV) oder **Meta Ads** (Werbeanzeigenmanager → Exportieren). Die Quelle wird automatisch am Header erkannt; Google braucht `Kampagne, Kosten` (plus Impressionen/Klicks/Conversions), Meta `Kampagnenname, Ausgegebener Betrag` (plus Link-Klicks/Ergebnisse/Conversion-Wert).
 - `vorperiode.csv` — optional; aktiviert Vergleichs-Deltas an den KPI-Kacheln und im Kommentar.
-- Der Parser ist tolerant: Vorspannzeilen, `Gesamt`-Zeile, Komma/Semikolon/Tab und deutsche Zahlenformate werden automatisch erkannt.
+- Der Parser ist tolerant gegenüber echten Exportvarianten: Vorspannzeilen, Summenzeilen
+  (`Gesamt`, `Gesamt: Konto`, `Summe`, Metas `Ergebnisse aus …`), Komma/Semikolon/Tab,
+  deutsche Zahlenformate und Spaltennamen mit Zusatz (`Kosten (EUR)`).
+- **Segmentierte Exporte** (nach Tag, Woche, Gerät, Netzwerk …) enthalten mehrere Zeilen je
+  Kampagne. Diese werden zusammengefasst — Summen addiert, Verhältniskennzahlen wie CTR,
+  CPC und ROAS anschließend aus den Summen berechnet statt gemittelt. Ein Hinweis auf der
+  Konsole nennt die erkannte Segmentspalte.
 
 Beispiel ausprobieren:
 

@@ -52,6 +52,44 @@ SOURCES = {
     },
 }
 
+# Spalten, die einen Export in mehrere Zeilen je Kampagne aufteilen
+# (Segmentierung nach Zeit, Gerät, Netzwerk …). Ihre Zeilen werden summiert.
+SEGMENT_COLUMNS = ("Tag", "Woche", "Monat", "Quartal", "Jahr", "Wochentag",
+                   "Gerät", "Netzwerk", "Klicktyp", "Anzeigengruppe", "Datum")
+
+ADDITIVE = ("impressionen", "klicks", "kosten", "conversions", "conv_wert")
+
+
+def is_total_row(name: str) -> bool:
+    """Summenzeile der Exporte erkennen — ohne Kampagnen zu treffen,
+    die zufällig mit „Gesamt…" beginnen (z. B. „Gesamtpaket Brand")."""
+    n = name.strip().lower()
+    return n in ("gesamt", "summe", "total") or n.startswith(
+        ("gesamt:", "gesamt —", "gesamt -", "ergebnisse aus", "summe:"))
+
+
+def derive(c: dict) -> dict:
+    """Verhältniskennzahlen aus den Summen berechnen (nie Mittelwerte mitteln)."""
+    c["ctr"] = c["klicks"] / c["impressionen"] * 100 if c["impressionen"] else 0.0
+    c["cpc"] = c["kosten"] / c["klicks"] if c["klicks"] else 0.0
+    c["cpa"] = c["kosten"] / c["conversions"] if c["conversions"] else 0.0
+    c["roas"] = c["conv_wert"] / c["kosten"] if c["kosten"] else 0.0
+    return c
+
+
+def aggregate(campaigns: list[dict]) -> list[dict]:
+    """Mehrere Zeilen derselben Kampagne (segmentierter Export) zusammenfassen."""
+    merged: dict[str, dict] = {}
+    for c in campaigns:
+        target = merged.get(c["name"])
+        if target is None:
+            merged[c["name"]] = dict(c)
+            continue
+        for key in ADDITIVE:
+            target[key] += c[key]
+    return [derive(c) for c in merged.values()]
+
+
 DEFAULT_BRAND = {
     "agentur": "",
     "logo": "",
@@ -111,6 +149,10 @@ def parse_export(path: Path) -> dict:
 
     cols = {k: col(k) for k in ("name", "impressionen", "klicks", "kosten",
                                 "conversions", "conv_wert")}
+    known = {c for c in cols.values() if c}
+    segments = [f for f in fields
+                if f and f not in known
+                and any(f.startswith(seg) for seg in SEGMENT_COLUMNS)]
     missing = [k for k in ("name", "kosten") if not cols[k]]
     if missing:
         raise SystemExit(f"{path} ({source}): Spalten fehlen: {', '.join(missing)}")
@@ -121,7 +163,7 @@ def parse_export(path: Path) -> dict:
     campaigns = []
     for row in reader:
         name = (row.get(cols["name"]) or "").strip()
-        if not name or name.lower().startswith(("gesamt", "ergebnisse aus")):
+        if not name or is_total_row(name):
             continue
         c = {
             "name": name,
@@ -131,13 +173,11 @@ def parse_export(path: Path) -> dict:
             "conversions": val(row, "conversions"),
             "conv_wert": val(row, "conv_wert"),
         }
-        c["ctr"] = c["klicks"] / c["impressionen"] * 100 if c["impressionen"] else 0.0
-        c["cpc"] = c["kosten"] / c["klicks"] if c["klicks"] else 0.0
-        c["cpa"] = c["kosten"] / c["conversions"] if c["conversions"] else 0.0
-        c["roas"] = c["conv_wert"] / c["kosten"] if c["kosten"] else 0.0
-        campaigns.append(c)
+        campaigns.append(derive(c))
     if not campaigns:
         raise SystemExit(f"{path}: keine Kampagnenzeilen gefunden.")
+
+    campaigns = aggregate(campaigns)
 
     total = {k: sum(c[k] for c in campaigns) for k in
              ("impressionen", "klicks", "kosten", "conversions", "conv_wert")}
@@ -145,6 +185,7 @@ def parse_export(path: Path) -> dict:
     total["cpc"] = total["kosten"] / total["klicks"] if total["klicks"] else 0.0
     total["roas"] = total["conv_wert"] / total["kosten"] if total["kosten"] else 0.0
     return {"zeitraum": zeitraum, "campaigns": campaigns, "total": total, "source": source,
+            "segments": segments,
             "label": path.stem.replace("kampagnen-", "").replace("meta-", "").replace("-", " ")}
 
 
@@ -633,6 +674,10 @@ def main() -> int:
     args = ap.parse_args()
 
     history = load_inputs(args.inputs)
+    for h in history:
+        if h.get("segments"):
+            print(f"Hinweis: Export ist nach {', '.join(h['segments'])} segmentiert — "
+                  f"Zeilen wurden je Kampagne zusammengefasst.", file=sys.stderr)
     data = history[-1]
     prev = history[-2] if len(history) >= 2 else None
     zeitraum = args.zeitraum or data["zeitraum"] or "Berichtszeitraum"

@@ -99,6 +99,47 @@ class TestMetaParser(unittest.TestCase):
             parse_export(p)
 
 
+class TestEchteExportformate(unittest.TestCase):
+    """Fälle, die in echten Google-Ads-Exporten vorkommen."""
+
+    def test_segmentierter_export_wird_zusammengefasst(self):
+        p = write_csv(
+            "Kampagne,Tag,Impressionen,Klicks,Kosten,Conversions,Conv.-Wert\n"
+            'Brand,2026-07-01,1600,200,"40,00",14,"1.300,00"\n'
+            'Brand,2026-07-02,1500,190,"38,00",13,"1.200,00"\n'
+            'Shopping,2026-07-01,8000,300,"180,00",9,"1.000,00"\n')
+        d = parse_export(p)
+        self.assertEqual([c["name"] for c in d["campaigns"]], ["Brand", "Shopping"])
+        brand = d["campaigns"][0]
+        self.assertAlmostEqual(brand["kosten"], 78.0, places=2)
+        self.assertEqual(brand["conversions"], 27)
+        # Verhältniszahlen aus den Summen, nicht gemittelt
+        self.assertAlmostEqual(brand["roas"], 2500 / 78, places=4)
+        self.assertAlmostEqual(brand["cpc"], 78 / 390, places=4)
+
+    def test_segmentspalte_wird_gemeldet(self):
+        p = write_csv("Kampagne,Gerät,Impressionen,Klicks,Kosten,Conversions\n"
+                      'A,Computer,10,1,"1,00",0\n')
+        self.assertIn("Gerät", parse_export(p)["segments"])
+
+    def test_summenzeilen_varianten_gefiltert(self):
+        p = write_csv("Kampagne,Impressionen,Klicks,Kosten,Conversions\n"
+                      'Brand,10,1,"1,00",0\n'
+                      'Gesamt: Konto,10,1,"1,00",0\n'
+                      'Summe,10,1,"1,00",0\n')
+        self.assertEqual([c["name"] for c in parse_export(p)["campaigns"]], ["Brand"])
+
+    def test_kampagne_die_mit_gesamt_beginnt_bleibt(self):
+        p = write_csv("Kampagne,Impressionen,Klicks,Kosten,Conversions\n"
+                      'Gesamtpaket Brand,10,1,"1,00",0\n')
+        self.assertEqual(parse_export(p)["campaigns"][0]["name"], "Gesamtpaket Brand")
+
+    def test_waehrung_im_spaltennamen(self):
+        p = write_csv("Kampagne,Impressionen,Klicks,Kosten (EUR),Conversions\n"
+                      'A,100,10,"25,50",2\n')
+        self.assertAlmostEqual(parse_export(p)["campaigns"][0]["kosten"], 25.5, places=2)
+
+
 class TestKommentar(unittest.TestCase):
     def setUp(self):
         self.juli = parse_export(SAMPLES / "kampagnen-juli-2026.csv")
