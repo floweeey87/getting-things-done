@@ -70,6 +70,17 @@ Windows/macOS, White-Label-Vorlage und Beispieldaten — das Paket, das Beta-Kä
 der Zahlung bekommen. SEO-Artikel und LinkedIn-Posts für den Launch liegen in
 [`marketing/`](marketing/).
 
+## Pre-Launch-Check
+
+```bash
+python3 reporthelden/preflight.py
+```
+
+Prüft vor dem Livegang: offene Platzhalter (auch mehrzeilige), nicht ersetzter CTA, tote
+interne Links, Share-Bild-Maße, CNAME-/canonical-Konsistenz sowie Aktualität von
+Demo-Report und Beta-Paket. Exit-Code 1, solange Blocker offen sind — damit auch als
+CI-Gate nutzbar.
+
 ## Tests
 
 ```bash

@@ -6,7 +6,10 @@ Ziel: **≥ 10 zahlende Beta-Nutzer (19 €) aus ≤ 100 Ansprachen**, bevor wei
 
 1. **Landingpage live stellen:** Deployment ist automatisiert — nach dem Merge nach `master` veröffentlicht der Workflow `.github/workflows/deploy-landing.yml` den Ordner `landing/` auf GitHub Pages (URL steht danach im Actions-Log; eigene Domain optional in den Repo-Settings). Vorher zwei Dinge erledigen: (a) in `index.html` den Platzhalter `BETA@PLATZHALTER.DE` durch den Zahlungslink ersetzen, (b) in `impressum.html` und `datenschutz.html` die gelb markierten `[PLATZHALTER]` mit echten Angaben füllen — **ohne Impressum keine Ads schalten (Abmahnrisiko)**.
 2. **Zahlungslink statt Mail-CTA (empfohlen):** Stripe Payment Link oder LemonSqueezy-Produkt „ReportHelden Beta — 19 €" anlegen und als CTA-Ziel eintragen. Zahlung ist das einzige Validierungssignal, das zählt.
-3. **Eigenen Report erzeugen:** Einen echten (anonymisierten) Kunden-Export durch den Generator jagen. Der eigene „Wow, das ist mein Report"-Moment ist der beste Pitch — und deckt Parser-Lücken auf.
+3. **Pre-Launch-Check laufen lassen:** `python3 preflight.py` prüft offene Platzhalter,
+   den CTA, interne Links, Share-Bild, Domain-Konsistenz und die Aktualität von Demo-Report
+   und Beta-Paket. Exit-Code 0 = startklar. **Nicht launchen, solange Blocker rot sind.**
+4. **Eigenen Report erzeugen:** Einen echten (anonymisierten) Kunden-Export durch den Generator jagen. Der eigene „Wow, das ist mein Report"-Moment ist der beste Pitch — und deckt Parser-Lücken auf.
 
 **Auslieferung nach Zahlung:** `python3 package.py` erzeugt `dist/reporthelden-beta.zip` —
 per Mail verschicken oder als Download hinter den Zahlungslink legen. Die Anleitung im
@@ -50,7 +53,14 @@ Paket beantwortet Installation, Export und Branding, sodass kein Support-Ping n�
 
 ## Tracking
 
-Tabelle führen (`validierung.csv` o. Ä.): Datum · Name/Quelle · Kanal · Antwort (gekauft/später/nein) · Einwand · Feature-Wunsch. Nach jeder Welle auswerten: Welcher Einwand kommt ≥ 3-mal? → vor der nächsten Welle adressieren (in der Landingpage oder im Produkt).
+Die Vorlage liegt bereit: [`validierung.csv`](validierung.csv) (Datum · Name · Kanal ·
+Antwort · Einwand · Feature-Wunsch · Notiz) — Beispielzeile überschreiben und nach jedem
+Gespräch eine Zeile ergänzen. Nach jeder Welle auswerten: Welcher Einwand kommt ≥ 3-mal?
+→ vor der nächsten Welle adressieren, und zwar in der Landingpage oder im Produkt, nicht
+im nächsten Gespräch.
+
+Vorbereitete Antworten auf die acht wahrscheinlichsten Einwände:
+[`marketing/einwaende.md`](marketing/einwaende.md) — vor Welle 1 einmal durchlesen.
 
 ## Entscheidungsregeln
 
