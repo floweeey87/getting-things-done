@@ -44,6 +44,22 @@ ARTICLES = [
     ("seo-agencyanalytics-alternative.md", "agencyanalytics-alternative"),
 ]
 
+# Eigenständige HTML-Seiten → WordPress-Seiten (Slug, Titel)
+PAGES = [
+    ("index.html", "start", "ReportHelden — Kundenreports in 60 Sekunden"),
+    ("demo-report.html", "beispiel-report", "Beispiel-Report"),
+    ("impressum.html", "impressum", "Impressum"),
+    ("datenschutz.html", "datenschutz", "Datenschutzerklärung"),
+]
+
+# Repo-Dateinamen → Pfade auf der Site
+LINK_MAP = {
+    "index.html": "/",
+    "demo-report.html": "/beispiel-report/",
+    "impressum.html": "/impressum/",
+    "datenschutz.html": "/datenschutz/",
+}
+
 
 def fail(msg: str):
     print(f"Fehler: {msg}", file=sys.stderr)
@@ -174,6 +190,64 @@ def markdown_to_html(md: str) -> tuple[str, str, str]:
     return title, "\n\n".join(body), excerpt
 
 
+# --------------------------------------------- Standalone-HTML → WP-Block
+
+WRAPPER = "rh-page"
+
+
+def _scope_selector(sel: str) -> str:
+    """Einen Selektor unter den Wrapper sperren, damit er das Theme nicht trifft."""
+    out = []
+    for part in sel.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if part in ("body", "html", ":root") or part.startswith(":root"):
+            out.append(f".{WRAPPER}")
+        elif part == "*":
+            out.append(f".{WRAPPER}, .{WRAPPER} *")
+        else:
+            out.append(f".{WRAPPER} {part}")
+    return ", ".join(out)
+
+
+def _scope_css(css: str) -> str:
+    """CSS-Regeln rekursiv unter den Wrapper sperren (inkl. @media-Blöcken)."""
+    out, i, n = [], 0, len(css)
+    while i < n:
+        brace = css.find("{", i)
+        if brace == -1:
+            break
+        prelude = css[i:brace].strip()
+        depth, j = 1, brace + 1
+        while j < n and depth:
+            depth += (css[j] == "{") - (css[j] == "}")
+            j += 1
+        block = css[brace + 1:j - 1]
+        if prelude.startswith("@"):
+            inner = _scope_css(block) if prelude.startswith("@media") else block
+            out.append(f"{prelude} {{\n{inner}\n}}")
+        else:
+            out.append(f"{_scope_selector(prelude)} {{{block}}}")
+        i = j
+    return "\n".join(out)
+
+
+def standalone_to_block(path: Path, link_map: dict[str, str]) -> str:
+    """Eigenständige HTML-Seite in einen themesicheren WordPress-Block wandeln."""
+    raw = path.read_text(encoding="utf-8")
+    style = re.search(r"<style>(.*?)</style>", raw, re.S)
+    body = re.search(r"<body>(.*)</body>", raw, re.S)
+    if not body:
+        fail(f"{path.name}: kein <body> gefunden.")
+    content = body.group(1).strip()
+    for old, new in link_map.items():
+        content = content.replace(f'href="{old}"', f'href="{new}"')
+    css = _scope_css(style.group(1)) if style else ""
+    return (f"<!-- wp:html -->\n<style>\n{css}\n</style>\n"
+            f'<div class="{WRAPPER}">\n{content}\n</div>\n<!-- /wp:html -->')
+
+
 # ----------------------------------------------------------------- WordPress
 
 class WordPress:
@@ -225,12 +299,15 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true", help="wirklich übertragen")
     ap.add_argument("--status", choices=("draft", "publish"), default="draft",
                     help="Status der Beiträge (Standard: draft)")
+    ap.add_argument("--only", choices=("posts", "pages"),
+                    help="nur Beiträge oder nur Seiten übertragen (Standard: beides)")
     ap.add_argument("--preview", type=Path,
                     help="erzeugtes HTML zur Kontrolle in diese Datei schreiben")
     args = ap.parse_args()
 
-    prepared = []
-    for filename, slug in ARTICLES:
+    prepared, pages = [], []
+    if args.only != "pages":
+      for filename, slug in ARTICLES:
         path = BASE / "marketing" / filename
         if not path.exists():
             fail(f"{path} nicht gefunden.")
@@ -240,7 +317,26 @@ def main() -> int:
         prepared.append({"slug": slug, "title": title, "content": content,
                          "excerpt": excerpt, "quelle": filename})
 
+    if args.only != "posts":
+        for filename, slug, title in PAGES:
+            path = BASE / "landing" / filename
+            if not path.exists():
+                fail(f"{path} nicht gefunden.")
+            block = standalone_to_block(path, LINK_MAP)
+            if "PLATZHALTER" in block or re.search(r"\[[A-ZÄÖÜ][^\]]{3,}\]", block):
+                fail(f"{filename}: enthält noch Platzhalter — erst ausfüllen "
+                     f"(python3 preflight.py zeigt sie).")
+            pages.append({"slug": slug, "title": title, "content": block,
+                          "excerpt": "", "quelle": filename})
+
     print(f"\nReportHelden · Veröffentlichung nach {args.site}\n")
+    if pages:
+        print("  Seiten:")
+        for a in pages:
+            print(f"    {a['slug']:18s} {len(a['content']):6d} Zeichen  ← {a['quelle']}")
+        print()
+    if prepared:
+        print("  Beiträge:")
     for a in prepared:
         print(f"  {a['slug']}")
         print(f"    Titel  : {a['title'][:72]}")
@@ -249,7 +345,8 @@ def main() -> int:
 
     if args.preview:
         args.preview.write_text("\n\n<hr>\n\n".join(
-            f"<h1>{a['title']}</h1>\n{a['content']}" for a in prepared), encoding="utf-8")
+            f"<h1>{a['title']}</h1>\n{a['content']}" for a in pages + prepared),
+            encoding="utf-8")
         print(f"\n  Vorschau geschrieben: {args.preview}")
 
     if not args.apply:
@@ -265,12 +362,15 @@ def main() -> int:
     me = wp.whoami()
     print(f"\nAngemeldet als {me.get('name')} (ID {me.get('id')})")
 
-    for a in prepared:
-        result, action = wp.upsert("posts", a["slug"], {
-            "title": a["title"], "content": a["content"],
-            "excerpt": a["excerpt"], "status": args.status,
-        })
-        print(f"  {a['slug']}: {action} → {result.get('link')} [{result.get('status')}]")
+    for kind, items in (("pages", pages), ("posts", prepared)):
+        for a in items:
+            fields = {"title": a["title"], "content": a["content"],
+                      "status": args.status}
+            if a["excerpt"]:
+                fields["excerpt"] = a["excerpt"]
+            result, action = wp.upsert(kind, a["slug"], fields)
+            print(f"  {kind[:-1]} {a['slug']}: {action} → {result.get('link')} "
+                  f"[{result.get('status')}]")
 
     print(f"\nFertig. Status: {args.status}."
           + (" Beiträge im WP-Backend prüfen und veröffentlichen.\n"

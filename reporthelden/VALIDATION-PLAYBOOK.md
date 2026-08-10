@@ -4,7 +4,13 @@ Ziel: **≥ 10 zahlende Beta-Nutzer (19 €) aus ≤ 100 Ansprachen**, bevor wei
 
 ## Vorbereitung (einmalig, ~1 Stunde)
 
-1. **Landingpage live stellen:** Deployment ist automatisiert — nach dem Merge nach `master` veröffentlicht der Workflow `.github/workflows/deploy-landing.yml` den Ordner `landing/` auf GitHub Pages (URL steht danach im Actions-Log; eigene Domain optional in den Repo-Settings). Vorher zwei Dinge erledigen: (a) in `index.html` den Platzhalter `BETA@PLATZHALTER.DE` durch den Zahlungslink ersetzen, (b) in `impressum.html` und `datenschutz.html` die gelb markierten `[PLATZHALTER]` mit echten Angaben füllen — **ohne Impressum keine Ads schalten (Abmahnrisiko)**.
+1. **Inhalte nach WordPress bringen:** Die Site läuft auf WordPress unter reporthelden.de.
+   `python3 publish_wp.py` überträgt Startseite, Beispiel-Report, Impressum, Datenschutz
+   (als Seiten) und die beiden SEO-Artikel (als Beiträge) — Trockenlauf und Entwurfsstatus
+   sind Voreinstellung. Vorher die Platzhalter in `landing/impressum.html` und
+   `landing/datenschutz.html` füllen; das Skript verweigert sonst die Übertragung.
+   **Ohne Impressum keine Ads schalten (Abmahnrisiko).** Danach in WordPress die Seite
+   „start" als Startseite setzen (Einstellungen → Lesen).
 2. **Zahlungslink statt Mail-CTA (empfohlen):** Stripe Payment Link oder LemonSqueezy-Produkt „ReportHelden Beta — 19 €" anlegen und als CTA-Ziel eintragen. Zahlung ist das einzige Validierungssignal, das zählt.
 3. **Pre-Launch-Check laufen lassen:** `python3 preflight.py` prüft offene Platzhalter,
    den CTA, interne Links, Share-Bild, Domain-Konsistenz und die Aktualität von Demo-Report

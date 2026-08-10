@@ -74,14 +74,15 @@ if og.exists():
 else:
     check("og-image.png vorhanden", False, "Datei fehlt")
 
-# 5) Domain-Konsistenz (CNAME vs. canonical/og:url)
+# 5) Domain-Konsistenz (canonical/og:url zeigen auf die Live-Domain)
 print("\nDomain")
-cname = (LANDING / "CNAME").read_text().strip() if (LANDING / "CNAME").exists() else ""
-check("CNAME gesetzt", bool(cname), "CNAME-Datei fehlt oder leer")
-urls = re.findall(r'(?:canonical" href|og:url" content)="https://([^/"]+)', index)
-check("canonical/og:url passen zur CNAME-Domain",
-      bool(urls) and all(u == cname for u in urls),
-      f"CNAME={cname or '–'}, Seite={', '.join(set(urls)) or '–'}")
+urls = set(re.findall(r'(?:canonical" href|og:url" content)="https://([^/"]+)', index))
+check("canonical/og:url zeigen auf " + DOMAIN,
+      bool(urls) and urls == {DOMAIN}, f"gefunden: {', '.join(urls) or '–'}")
+check("kein GitHub-Pages-Rest (CNAME/Workflow)",
+      not (LANDING / "CNAME").exists()
+      and not (BASE.parent / ".github/workflows/deploy-landing.yml").exists(),
+      "Site läuft auf WordPress — statische Deploy-Reste entfernen")
 
 # 6) Demo-Report aktuell (Landing-Kopie vs. generierter Report)
 print("\nAuslieferung")

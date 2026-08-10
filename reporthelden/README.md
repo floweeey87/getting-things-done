@@ -82,7 +82,15 @@ python3 reporthelden/publish_wp.py --apply                  # als Entwürfe anle
 python3 reporthelden/publish_wp.py --apply --status publish # direkt live
 ```
 
-Überträgt die SEO-Artikel aus `marketing/` als WordPress-Beiträge. Trockenlauf und
+Überträgt Startseite, Beispiel-Report, Impressum und Datenschutz als **Seiten** sowie die
+beiden SEO-Artikel aus `marketing/` als **Beiträge**. Die eigenständigen HTML-Seiten werden
+dabei in themesichere Blöcke gewandelt: Das komplette CSS wird unter `.rh-page` gekapselt,
+sodass keine Regel ins WordPress-Theme ausbricht, und repo-interne Links werden zu
+Site-Pfaden (`/beispiel-report/`, `/impressum/`, `/datenschutz/`).
+
+Nach dem ersten Lauf in WordPress unter *Einstellungen → Lesen* die Seite „start" als
+Startseite festlegen. Mit `--only posts` bzw. `--only pages` lässt sich die Übertragung
+einschränken. Trockenlauf und
 Entwurfsstatus sind Voreinstellung, Zugangsdaten kommen ausschließlich aus der Umgebung,
 und bestehende Beiträge werden über den Slug aktualisiert statt dupliziert. Die interne
 `Ziel-Keywords`-Zeile wird nie mitveröffentlicht — das Skript bricht ab, falls sie es
