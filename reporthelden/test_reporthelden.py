@@ -450,7 +450,7 @@ class TestWindows(unittest.TestCase):
         """Guard gegen den Rückfall: read_text/write_text/open ohne
         encoding= nimmt auf Windows die Codepage der Systemsprache."""
         for name in ("app.py", "build_report.py", "preflight.py",
-                     "package.py", "publish_wp.py"):
+                     "package.py", "publish_wp.py", "make_og_image.py"):
             quelle = (Path(__file__).parent / name).read_text(encoding="utf-8")
             for k in ast.walk(ast.parse(quelle, filename=name)):
                 if not isinstance(k, ast.Call):

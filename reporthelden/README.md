@@ -143,6 +143,16 @@ nur einer Kampagne — und dass Prozentwerte deutsch geschrieben werden. Drei pr
 **Bedienfehler**: Google- und Meta-Exporte gemeinsam abzugeben ergibt keinen Trend, sondern
 einen Vergleich zweier Plattformen — das wird abgelehnt statt still falsch gerechnet.
 
+## Landingpage & Share-Bild
+
+`landing/` enthält die Seiten als eigenständige HTML-Dateien (Startseite, Beispiel-Report,
+Impressum, Datenschutz). `publish_wp.py` wandelt sie in themesichere WordPress-Blöcke:
+sämtliches CSS wird unter `.rh-page` gekapselt, damit es das Theme nicht trifft.
+
+Das Share-Bild ist reproduzierbar — `python3 make_og_image.py` rendert
+`landing/og-image.png` (1200×630) aus einer HTML-Vorlage im Skript, mit dem installierten
+Chrome/Edge/Chromium. Kein Binärartefakt, das niemand mehr nachbauen kann.
+
 ## Roadmap
 
 - ✅ White-Label, Mehrmonats-Trends, KI-Feinschliff, Meta-Ads-Import, Drag-&-Drop-App, Test-Suite, PDF-Export (`--pdf`, via installiertem Chrome/Edge)
