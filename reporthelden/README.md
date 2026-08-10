@@ -126,13 +126,17 @@ CI-Gate nutzbar.
 cd reporthelden && python3 -m unittest test_reporthelden -v
 ```
 
-42 Tests decken beide Parser (Google/Meta) in deutscher und englischer Oberfläche,
+48 Tests decken beide Parser (Google/Meta) in deutscher und englischer Oberfläche,
 beide Zahlenformate samt Mehrdeutigkeiten, Währungserkennung, segmentierte Exporte,
 Spaltenverwechslungs- und Summenzeilen-Fälle, die Kommentar-Regeln, HTML-Escaping
 und den Multipart-Parser der App ab. Vier davon sichern die **Python-3.9-Kompatibilität**
 statisch ab (3.9 ist der Systempython von macOS — dort darf nichts nachinstalliert werden
 müssen): 3.9-Syntax, der nötige `from __future__ import annotations`, keine PEP-604-Union
-außerhalb von Annotationen und die Versionsprüfung beim Start.
+außerhalb von Annotationen und die Versionsprüfung beim Start. Sechs weitere sichern den
+**Windows-Betrieb**: CSVs aus Excel (cp1252), Google-Ads-„Excel-CSV" (UTF-16), BOM-Dateien,
+unlesbare Bytes ohne Traceback — und ein AST-Guard, dass keine Datei-Operation ohne
+`encoding=` zurückkehrt (ohne das schreibt Windows in der Codepage der Systemsprache und
+scheitert am ersten `€` des Reports).
 
 ## Roadmap
 

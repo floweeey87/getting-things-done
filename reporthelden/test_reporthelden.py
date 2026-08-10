@@ -307,6 +307,80 @@ class TestMultipart(unittest.TestCase):
         self.assertEqual(files[0][0], "evil.csv")
 
 
+class TestWindows(unittest.TestCase):
+    """Windows ist die Mehrheitsplattform der Zielgruppe, aber die
+    Standard-Kodierung dort ist nicht UTF-8, sondern die Codepage der
+    Systemsprache. Jede Datei-Operation ohne ``encoding=`` ist deshalb ein
+    Absturz, der erst beim Kunden auftritt — nie hier."""
+
+    ZEILEN = ("Kampagne,Impressionen,Klicks,Kosten,Conversions,Conv.-Wert\n"
+              'Brand – Süßwaren,"12.400","540","1.234,56","48","9.870,00"\n')
+
+    def schreibe(self, daten: bytes) -> Path:
+        f = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
+        f.write(daten)
+        f.close()
+        return Path(f.name)
+
+    def test_export_aus_excel_cp1252(self):
+        """In Excel geöffnet und gespeichert — der Windows-Normalfall."""
+        d = parse_export(self.schreibe(self.ZEILEN.encode("cp1252")))
+        self.assertEqual(d["encoding"], "cp1252")
+        self.assertEqual(d["campaigns"][0]["name"], "Brand – Süßwaren")
+        self.assertAlmostEqual(d["campaigns"][0]["kosten"], 1234.56, places=2)
+
+    def test_export_als_utf16(self):
+        """Die „Excel-CSV"-Variante von Google Ads ist UTF-16 mit Tabs."""
+        tabs = ("Kampagne\tImpressionen\tKlicks\tKosten\tConversions\tConv.-Wert\n"
+                "Brand – Süßwaren\t12.400\t540\t1.234,56\t48\t9.870,00\n")
+        d = parse_export(self.schreibe(tabs.encode("utf-16")))
+        self.assertEqual(d["encoding"], "utf-16")
+        self.assertEqual(d["campaigns"][0]["name"], "Brand – Süßwaren")
+        self.assertAlmostEqual(d["campaigns"][0]["kosten"], 1234.56, places=2)
+
+    def test_export_als_utf8_mit_bom(self):
+        d = parse_export(self.schreibe(self.ZEILEN.encode("utf-8-sig")))
+        self.assertEqual(d["encoding"], "utf-8-sig")
+        self.assertEqual(d["campaigns"][0]["name"], "Brand – Süßwaren")
+
+    def test_kaputte_datei_wirft_keinen_traceback(self):
+        """Notfalls latin-1 — ein Report mit Zeichensalat ist besser als ein
+        Traceback, den der Nutzer nicht einordnen kann."""
+        müll = b"Kampagne,Impressionen,Klicks,Kosten,Conversions\n\xff\xfeA\x81B,10,1,1,0\n"
+        self.assertTrue(parse_export(self.schreibe(müll))["campaigns"])
+
+    def test_report_ist_utf8_und_nicht_codepage(self):
+        """Der Report enthält € und ▼ — beide sprengen cp850 bzw. cp1252.
+        Ohne explizites encoding= stürzt Windows genau hier ab."""
+        d = parse_export(SAMPLES / "kampagnen-juli-2026.csv")
+        out = render("Kunde", "Juli 2026", [d], DEFAULT_BRAND, build_commentary(d, None))
+        with self.assertRaises(UnicodeEncodeError):
+            out.encode("cp850")
+        ziel = Path(tempfile.mkdtemp()) / "report.html"
+        ziel.write_text(out, encoding="utf-8")
+        self.assertEqual(ziel.read_text(encoding="utf-8"), out)
+
+    def test_alle_dateizugriffe_nennen_eine_kodierung(self):
+        """Guard gegen den Rückfall: read_text/write_text/open ohne
+        encoding= nimmt auf Windows die Codepage der Systemsprache."""
+        for name in ("app.py", "build_report.py", "preflight.py",
+                     "package.py", "publish_wp.py"):
+            quelle = (Path(__file__).parent / name).read_text(encoding="utf-8")
+            for k in ast.walk(ast.parse(quelle, filename=name)):
+                if not isinstance(k, ast.Call):
+                    continue
+                ziel = getattr(k.func, "attr", getattr(k.func, "id", ""))
+                if ziel not in ("read_text", "write_text", "open"):
+                    continue
+                if ziel == "open" and isinstance(k.func, ast.Attribute):
+                    continue  # webbrowser.open, zipfile.open …
+                binaer = any(isinstance(a, ast.Constant) and "b" in str(a.value)
+                             for a in k.args)
+                self.assertTrue(
+                    binaer or any(kw.arg == "encoding" for kw in k.keywords),
+                    f"{name}:{k.lineno}: {ziel}() ohne encoding=")
+
+
 class TestPython39(unittest.TestCase):
     """macOS liefert Python 3.9 mit („ist doch eh schon drauf") — genau darauf
     muss der ausgelieferte Code laufen. Ohne diese Absicherung schlägt

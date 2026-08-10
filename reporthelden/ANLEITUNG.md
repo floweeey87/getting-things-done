@@ -33,6 +33,10 @@ deinem Rechner (localhost) — es werden keine Daten übertragen.
 Tipp: Exportiere gleich die letzten 2–3 Monate als einzelne Dateien — ReportHelden macht
 daraus automatisch Vergleichswerte und Trendlinien.
 
+Die CSV darf ruhig durch Excel gelaufen sein — ReportHelden erkennt die Kodierung selbst
+(UTF-8, UTF-16, Windows-Codepage) und liest auch Exporte, die in Excel geöffnet und wieder
+gespeichert wurden.
+
 Egal welche Oberflächensprache: **deutsche und englische Exporte** werden beide gelesen
 („Kampagne/Kosten" ebenso wie „Campaign/Cost"), inklusive der jeweiligen Zahlenformate
 (`1.234,56` und `1,234.56`). Segmentierte Exporte (nach Tag, Gerät, Netzwerk …) fasst

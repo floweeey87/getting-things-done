@@ -42,14 +42,14 @@ print("\nReportHelden · Pre-Launch-Check\n")
 print("Platzhalter")
 placeholder = re.compile(r"\[[A-ZÄÖÜ][^\]]{3,}\]", re.S)
 for page in sorted(LANDING.glob("*.html")):
-    hits = placeholder.findall(page.read_text())
+    hits = placeholder.findall(page.read_text(encoding="utf-8"))
     labels = ", ".join(sorted({h.split("—")[0].strip()[:32] for h in hits})[:3])
     check(f"{page.name}: keine offenen Platzhalter", not hits,
           f"{len(hits)} offen ({labels}{' …' if len(hits) > 3 else ''})")
 
 # 2) CTA muss auf den Zahlungslink zeigen, nicht auf den Platzhalter
 print("\nCall-to-Action")
-index = (LANDING / "index.html").read_text()
+index = (LANDING / "index.html").read_text(encoding="utf-8")
 ctas = re.findall(r'class="btn btn-primary" href="([^"]+)"', index)
 check("CTA-Ziel gesetzt (Zahlungslink statt Platzhalter-Mail)",
       bool(ctas) and not any("PLATZHALTER" in c for c in ctas),
@@ -59,7 +59,7 @@ check("CTA-Ziel gesetzt (Zahlungslink statt Platzhalter-Mail)",
 print("\nVerlinkung")
 missing = []
 for page in sorted(LANDING.glob("*.html")):
-    html = page.read_text()
+    html = page.read_text(encoding="utf-8")
     targets = re.findall(r'href="([^"#:]+)"', html)
     targets += [s for s in re.findall(r'(?:src|content)="([^":]+\.(?:png|jpg|svg))"', html)]
     missing += [f"{page.name} → {t}" for t in targets if not (LANDING / t).exists()]

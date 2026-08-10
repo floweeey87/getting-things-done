@@ -39,6 +39,15 @@ if sys.version_info < MIN_PYTHON:
     sys.exit("ReportHelden braucht Python 3.9 oder neuer — hier läuft Python "
              + ".".join(str(n) for n in sys.version_info[:3]) + ".")
 
+# Die deutsche Windows-Konsole läuft auf cp850 — dort existiert kein „—" und
+# kein „→". Ein Hinweistext darf den Report nicht mit einem Traceback beenden.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(errors="replace")
+        except (ValueError, OSError):
+            pass
+
 # Spalten-Mappings je Quelle: interner Name -> Liste möglicher Spalten-Präfixe.
 # Jede Quelle kennt die deutsche *und* die englische Oberfl\u00e4che \u2014 viele
 # PPC-Leute im DACH-Raum betreiben Google Ads und Meta auf Englisch.
@@ -210,10 +219,34 @@ def detect_currency(kosten_col: str | None, values) -> str:
     return "€"
 
 
+# Reihenfolge der Kodierungs-Versuche. utf-8 deckt die Direkt-Exports ab,
+# utf-16 die „Excel-CSV"-Variante von Google Ads, cp1252 alles, was einmal
+# in Excel geöffnet und wieder gespeichert wurde (auf Windows der Normalfall).
+ENCODINGS = ("utf-8-sig", "utf-16", "cp1252", "latin-1")
+
+
+def read_export_text(path: Path) -> tuple[str, str]:
+    """CSV-Inhalt lesen, egal in welcher Kodierung er ankommt.
+
+    Ein falsch geratenes Encoding darf keinen Traceback erzeugen — die Datei
+    kommt aus fremder Hand (Export, Excel, Mail-Anhang), nicht aus unserer.
+    """
+    raw = path.read_bytes()
+    if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return raw.decode("utf-16"), "utf-16"
+    for enc in ENCODINGS:
+        try:
+            return raw.decode(enc), enc
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+    return raw.decode("latin-1"), "latin-1"  # kann nicht scheitern
+
+
 def parse_export(path: Path) -> dict:
     """Liest einen Google-Ads-Export: tolerant gegenüber Vorspannzeilen,
-    Trennzeichen (Komma/Semikolon/Tab) und einer 'Gesamt'-Zeile."""
-    lines = path.read_text(encoding="utf-8-sig").splitlines()
+    Trennzeichen (Komma/Semikolon/Tab), Kodierung und einer 'Gesamt'-Zeile."""
+    text, encoding = read_export_text(path)
+    lines = text.splitlines()
     header_idx, source = None, None
     for i, l in enumerate(lines):
         for src, spec in SOURCES.items():
@@ -290,7 +323,7 @@ def parse_export(path: Path) -> dict:
     total["cpc"] = total["kosten"] / total["klicks"] if total["klicks"] else 0.0
     total["roas"] = total["conv_wert"] / total["kosten"] if total["kosten"] else 0.0
     return {"zeitraum": zeitraum, "campaigns": campaigns, "total": total, "source": source,
-            "segments": segments, "currency": currency,
+            "segments": segments, "currency": currency, "encoding": encoding,
             "label": path.stem.replace("kampagnen-", "").replace("meta-", "").replace("-", " ")}
 
 
@@ -310,7 +343,9 @@ def load_inputs(paths: list[Path]) -> list[dict]:
 def load_brand(path: Path | None) -> dict:
     brand = dict(DEFAULT_BRAND)
     if path:
-        brand.update(json.loads(path.read_text()))
+        # utf-8-sig: Notepad hängt beim Speichern gern ein BOM an, an dem
+        # json.loads sonst mit „Expecting value: line 1 column 1" scheitert.
+        brand.update(json.loads(path.read_text(encoding="utf-8-sig")))
     return brand
 
 
@@ -794,6 +829,10 @@ def main() -> int:
         if h.get("segments"):
             print(f"Hinweis: Export ist nach {', '.join(h['segments'])} segmentiert — "
                   f"Zeilen wurden je Kampagne zusammengefasst.", file=sys.stderr)
+        if h.get("encoding") not in (None, "utf-8-sig"):
+            print(f"Hinweis: {h['label']} war nicht UTF-8, sondern {h['encoding']} "
+                  f"(typisch nach dem Speichern in Excel) — wurde trotzdem gelesen.",
+                  file=sys.stderr)
     data = history[-1]
     prev = history[-2] if len(history) >= 2 else None
     zeitraum = args.zeitraum or data["zeitraum"] or "Berichtszeitraum"
@@ -805,7 +844,10 @@ def main() -> int:
         commentary = ai_refine(commentary, data, args.kunde)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(render(args.kunde, zeitraum, history, brand, commentary))
+    # Immer utf-8: ohne diese Angabe schreibt Windows in der Codepage der
+    # Systemsprache — und scheitert am ersten € oder ▼ des Reports.
+    args.output.write_text(render(args.kunde, zeitraum, history, brand, commentary),
+                           encoding="utf-8")
     extras = []
     if args.pdf and export_pdf(args.output, args.output.with_suffix(".pdf")):
         extras.append("PDF")
