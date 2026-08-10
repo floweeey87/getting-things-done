@@ -31,41 +31,56 @@ import sys
 from pathlib import Path
 
 # Spalten-Mappings je Quelle: interner Name -> Liste möglicher Spalten-Präfixe.
+# Jede Quelle kennt die deutsche *und* die englische Oberfl\u00e4che \u2014 viele
+# PPC-Leute im DACH-Raum betreiben Google Ads und Meta auf Englisch.
+# \u201edetect" ist eine Liste von Marker-Gruppen; eine passende Gruppe gen\u00fcgt.
 SOURCES = {
+    # Meta zuerst pr\u00fcfen: \u201eKampagnenname"/\u201eCampaign name" enthalten die
+    # Google-Marker \u201eKampagne"/\u201eCampaign" als Teilstring.
     "Meta Ads": {
-        "detect": ["Kampagnenname", "Ausgegebener Betrag"],
-        "name": ["Kampagnenname"],
-        "impressionen": ["Impressionen"],
-        "klicks": ["Link-Klicks", "Klicks (alle)", "Klicks"],
-        "kosten": ["Ausgegebener Betrag"],
-        "conversions": ["Ergebnisse", "K\u00e4ufe", "Conversions"],
-        "conv_wert": ["Conversion-Wert", "Kaufwert"],
+        "detect": [["Kampagnenname", "Ausgegebener Betrag"],
+                   ["Campaign name", "Amount spent"]],
+        "name": ["Kampagnenname", "Campaign name"],
+        "impressionen": ["Impressionen", "Impressions"],
+        "klicks": ["Link-Klicks", "Klicks (alle)", "Klicks",
+                   "Link clicks", "Clicks (all)", "Clicks"],
+        "kosten": ["Ausgegebener Betrag", "Amount spent"],
+        "conversions": ["Ergebnisse", "K\u00e4ufe", "Conversions",
+                        "Results", "Purchases"],
+        "conv_wert": ["Conversion-Wert", "Kaufwert",
+                      "Conversion value", "Purchase conversion value"],
     },
     "Google Ads": {
-        "detect": ["Kampagne", "Kosten"],
-        "name": ["Kampagne"],
-        "impressionen": ["Impressionen"],
-        "klicks": ["Klicks"],
-        "kosten": ["Kosten"],
+        "detect": [["Kampagne", "Kosten"], ["Campaign", "Cost"]],
+        "name": ["Kampagne", "Campaign"],
+        "impressionen": ["Impressionen", "Impr.", "Impressions"],
+        "klicks": ["Klicks", "Clicks"],
+        "kosten": ["Kosten", "Cost"],
         "conversions": ["Conversions"],
-        "conv_wert": ["Conv.-Wert", "Conv-Wert"],
+        "conv_wert": ["Conv.-Wert", "Conv-Wert", "Conv. value",
+                      "Conversion value", "All conv. value"],
     },
 }
 
 # Spalten, die einen Export in mehrere Zeilen je Kampagne aufteilen
 # (Segmentierung nach Zeit, Gerät, Netzwerk …). Ihre Zeilen werden summiert.
 SEGMENT_COLUMNS = ("Tag", "Woche", "Monat", "Quartal", "Jahr", "Wochentag",
-                   "Gerät", "Netzwerk", "Klicktyp", "Anzeigengruppe", "Datum")
+                   "Gerät", "Netzwerk", "Klicktyp", "Anzeigengruppe", "Datum",
+                   "Day", "Week", "Month", "Quarter", "Year", "Device",
+                   "Network", "Click type", "Ad group", "Date")
 
 ADDITIVE = ("impressionen", "klicks", "kosten", "conversions", "conv_wert")
 
 
 def is_total_row(name: str) -> bool:
     """Summenzeile der Exporte erkennen — ohne Kampagnen zu treffen,
-    die zufällig mit „Gesamt…" beginnen (z. B. „Gesamtpaket Brand")."""
+    die zufällig mit „Gesamt…"/„Total…" beginnen (z. B. „Gesamtpaket Brand"
+    oder „Total Rewards Brand")."""
     n = name.strip().lower()
-    return n in ("gesamt", "summe", "total") or n.startswith(
-        ("gesamt:", "gesamt —", "gesamt -", "ergebnisse aus", "summe:"))
+    return n in ("gesamt", "summe", "total", "totals", "grand total",
+                 "gesamtergebnis") or n.startswith(
+        ("gesamt:", "gesamt —", "gesamt -", "ergebnisse aus", "summe:",
+         "total:", "total —", "total -", "totals:", "results from"))
 
 
 def derive(c: dict) -> dict:
@@ -101,17 +116,89 @@ DEFAULT_BRAND = {
 
 # ---------------------------------------------------------------- Parsen
 
-def parse_number(raw: str) -> float:
-    """'1.234,56' / '12,3 %' / '1234.56' -> float."""
-    s = raw.strip().replace(" ", "").replace("€", "").replace("%", "").strip()
-    if not s or s in {"--", "-"}:
+CURRENCY_SYMBOLS = {"€": "€", "EUR": "€", "$": "$", "USD": "$",
+                    "£": "£", "GBP": "£", "CHF": "CHF", "PLN": "zł", "zł": "zł"}
+
+# Zeichen, die in Zahlenzellen vorkommen, aber nicht zur Zahl gehören.
+_STRIP = " \t\xa0\u202f\u2009'\"%€$£"
+
+
+def _clean_number(raw: str) -> str:
+    s = raw.strip()
+    for token in ("CHF", "EUR", "USD", "GBP", "PLN", "zł"):
+        s = s.replace(token, "")
+    return "".join(ch for ch in s if ch not in _STRIP)
+
+
+def decimal_separator(s: str) -> str | None:
+    """Welches Zeichen ist in dieser einen Zahl das Dezimaltrennzeichen?
+
+    ``None`` heißt „nicht entscheidbar" — etwa bei ``1,234``/``1.234``, das
+    deutsch 1,234 und englisch 1234 bedeuten kann.
+    """
+    has_dot, has_comma = "." in s, "," in s
+    if has_dot and has_comma:
+        return "," if s.rfind(",") > s.rfind(".") else "."
+    sep = "," if has_comma else "." if has_dot else None
+    if sep is None or s.count(sep) > 1:
+        return None
+    head, _, tail = s.partition(sep)
+    if not tail.isdigit() or not head.lstrip("+-").isdigit():
+        return None
+    # Genau drei Nachkommastellen sind mehrdeutig (Tausender oder Dezimal).
+    return None if len(tail) == 3 else sep
+
+
+def detect_decimal(samples) -> str | None:
+    """Das Dezimaltrennzeichen einer ganzen Datei aus allen Zahlen ableiten.
+
+    Eine einzelne eindeutige Zahl (``24.657,70`` oder ``0.57``) klärt das
+    Format für die mehrdeutigen Zellen derselben Datei mit.
+    """
+    votes = {",": 0, ".": 0}
+    for raw in samples:
+        sep = decimal_separator(_clean_number(raw))
+        if sep:
+            votes[sep] += 1
+    if votes[","] == votes["."]:
+        return None
+    return max(votes, key=votes.get)
+
+
+def parse_number(raw: str, decimal: str | None = None) -> float:
+    """'1.234,56' / '1,234.56' / '12,3 %' / '1234.56' -> float.
+
+    ``decimal`` ist das für die Datei ermittelte Dezimaltrennzeichen. Ohne
+    diese Angabe entscheidet die Zahl selbst; bleibt sie mehrdeutig, gilt der
+    Separator als Tausendertrenner (``1,234`` -> 1234).
+    """
+    s = _clean_number(raw)
+    if not s or s.strip("-–—") == "":
         return 0.0
-    if "," in s:
-        s = s.replace(".", "").replace(",", ".")
+    sep = decimal or decimal_separator(s)
+    if sep:
+        other = "." if sep == "," else ","
+        s = s.replace(other, "").replace(sep, ".")
+    else:
+        s = s.replace(".", "").replace(",", "")
     try:
         return float(s)
     except ValueError:
         return 0.0
+
+
+def detect_currency(kosten_col: str | None, values) -> str:
+    """Währung aus der Kostenspalte ableiten — „Kosten (EUR)", „Cost (USD)"
+    oder ein Symbol in den Zellen. Ohne Hinweis bleibt es beim Euro."""
+    haystack = kosten_col or ""
+    for raw in values:
+        if any(t in raw for t in CURRENCY_SYMBOLS):
+            haystack += " " + raw
+            break
+    for token, symbol in CURRENCY_SYMBOLS.items():
+        if token in haystack:
+            return symbol
+    return "€"
 
 
 def parse_export(path: Path) -> dict:
@@ -121,7 +208,7 @@ def parse_export(path: Path) -> dict:
     header_idx, source = None, None
     for i, l in enumerate(lines):
         for src, spec in SOURCES.items():
-            if all(marker in l for marker in spec["detect"]):
+            if any(all(m in l for m in group) for group in spec["detect"]):
                 header_idx, source = i, src
                 break
         if source:
@@ -157,11 +244,20 @@ def parse_export(path: Path) -> dict:
     if missing:
         raise SystemExit(f"{path} ({source}): Spalten fehlen: {', '.join(missing)}")
 
+    rows = list(reader)
+
+    # Zahlenformat einmal für die ganze Datei bestimmen: eine eindeutige Zahl
+    # („24.657,70" oder „0.57") entscheidet auch über die mehrdeutigen Zellen
+    # („1,234" ist deutsch 1,234 und englisch 1234).
+    numeric = [k for k in ADDITIVE if cols[k]]
+    decimal = detect_decimal(row.get(cols[k]) or "" for row in rows for k in numeric)
+    currency = detect_currency(cols["kosten"], (row.get(cols["kosten"]) or "" for row in rows))
+
     def val(row: dict, key: str) -> float:
-        return parse_number(row.get(cols[key] or "", "0") or "0")
+        return parse_number(row.get(cols[key] or "", "0") or "0", decimal)
 
     campaigns = []
-    for row in reader:
+    for row in rows:
         name = (row.get(cols["name"]) or "").strip()
         if not name or is_total_row(name):
             continue
@@ -185,7 +281,7 @@ def parse_export(path: Path) -> dict:
     total["cpc"] = total["kosten"] / total["klicks"] if total["klicks"] else 0.0
     total["roas"] = total["conv_wert"] / total["kosten"] if total["kosten"] else 0.0
     return {"zeitraum": zeitraum, "campaigns": campaigns, "total": total, "source": source,
-            "segments": segments,
+            "segments": segments, "currency": currency,
             "label": path.stem.replace("kampagnen-", "").replace("meta-", "").replace("-", " ")}
 
 
@@ -230,8 +326,17 @@ def de(value: float, decimals: int = 0) -> str:
     return s.replace(",", " ").replace(".", ",").replace(" ", ".")
 
 
+CURRENCY = "€"
+
+
+def use_currency(data: dict) -> None:
+    """Währung des Berichts aus dem Export übernehmen (Standard: Euro)."""
+    global CURRENCY
+    CURRENCY = data.get("currency") or "€"
+
+
 def eur(value: float) -> str:
-    return de(value, 2) + " €"
+    return de(value, 2) + " " + CURRENCY
 
 
 def pct_delta(now: float, before: float) -> float | None:
@@ -243,6 +348,7 @@ def pct_delta(now: float, before: float) -> float | None:
 # ------------------------------------------------------------- Kommentar
 
 def build_commentary(data: dict, prev: dict | None) -> list[str]:
+    use_currency(data)
     total = data["total"]
     campaigns = data["campaigns"]
     parts = []
@@ -459,6 +565,7 @@ def render(kunde: str, zeitraum: str, history: list[dict], brand: dict,
            commentary_parts: list[str]) -> str:
     data = history[-1]
     prev = history[-2] if len(history) >= 2 else None
+    use_currency(data)
     total = data["total"]
     pt = prev["total"] if prev else None
     tiles = "\n".join([
@@ -682,6 +789,7 @@ def main() -> int:
     prev = history[-2] if len(history) >= 2 else None
     zeitraum = args.zeitraum or data["zeitraum"] or "Berichtszeitraum"
     brand = load_brand(args.brand)
+    use_currency(data)
 
     commentary = build_commentary(data, prev)
     if args.ai:

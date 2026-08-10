@@ -10,8 +10,8 @@ import unittest
 from pathlib import Path
 
 from app import parse_multipart
-from build_report import (DEFAULT_BRAND, build_commentary, de, eur,
-                          parse_export, parse_number, pct_delta, render)
+from build_report import (DEFAULT_BRAND, build_commentary, de, detect_decimal,
+                          eur, parse_export, parse_number, pct_delta, render)
 
 SAMPLES = Path(__file__).parent / "sample-data"
 
@@ -33,6 +33,33 @@ class TestZahlen(unittest.TestCase):
         self.assertEqual(parse_number("1234.56"), 1234.56)
         self.assertEqual(parse_number(""), 0.0)
         self.assertEqual(parse_number("--"), 0.0)
+
+    def test_englisches_tausendertrennzeichen(self):
+        """1,234.56 darf nie als 1,23456 gelesen werden."""
+        self.assertEqual(parse_number("1,234.56"), 1234.56)
+        self.assertEqual(parse_number("24,657.70"), 24657.7)
+        self.assertEqual(parse_number("1,234,567.89"), 1234567.89)
+
+    def test_reine_tausendertrennung_ohne_nachkommastellen(self):
+        """'1.234' und '1,234' sind Tausender, keine Drei-Nachkomma-Zahl."""
+        self.assertEqual(parse_number("1.234"), 1234.0)
+        self.assertEqual(parse_number("1,234"), 1234.0)
+        self.assertEqual(parse_number("1.234.567"), 1234567.0)
+
+    def test_dezimaltrennzeichen_der_datei_entscheidet(self):
+        """Der Dateikontext löst die Mehrdeutigkeit von '1,234' auf."""
+        self.assertEqual(detect_decimal(["24.657,70", "0,57", "1,234"]), ",")
+        self.assertEqual(detect_decimal(["24,657.70", "0.57", "1,234"]), ".")
+        self.assertIsNone(detect_decimal(["1,234", "5.678"]))
+        self.assertEqual(parse_number("1,234", ","), 1.234)
+        self.assertEqual(parse_number("1,234", "."), 1234.0)
+
+    def test_symbole_und_vorzeichen(self):
+        self.assertEqual(parse_number("€ 24.657,70"), 24657.7)
+        self.assertEqual(parse_number("$1,234.56"), 1234.56)
+        self.assertEqual(parse_number("CHF 1'234.50"), 1234.5)
+        self.assertEqual(parse_number("1 234,56"), 1234.56)
+        self.assertEqual(parse_number("-12,50"), -12.5)
 
     def test_ausgabeformat(self):
         self.assertEqual(de(24657.7, 2), "24.657,70")
@@ -138,6 +165,79 @@ class TestEchteExportformate(unittest.TestCase):
         p = write_csv("Kampagne,Impressionen,Klicks,Kosten (EUR),Conversions\n"
                       'A,100,10,"25,50",2\n')
         self.assertAlmostEqual(parse_export(p)["campaigns"][0]["kosten"], 25.5, places=2)
+
+
+class TestEnglischeOberflaeche(unittest.TestCase):
+    """Viele PPC-Leute im DACH-Raum betreiben Google Ads und Meta auf Englisch."""
+
+    GOOGLE_EN = ("Campaign report\nAug 1, 2026 - Aug 31, 2026\n"
+                 "Campaign,Impressions,Clicks,Cost,Conversions,Conv. value,Cost / conv.\n"
+                 'Brand - Search,"124,300","4,210","1,234.56",48.00,"9,870.00",25.72\n'
+                 'Generic - Search,"88,120","2,105","2,980.10",31.00,"5,120.50",96.13\n'
+                 'Total: account,"212,420","6,315","4,214.66",79.00,"14,990.50",53.35\n')
+
+    def test_englischer_google_export_wird_erkannt(self):
+        d = parse_export(write_csv(self.GOOGLE_EN))
+        self.assertEqual(d["source"], "Google Ads")
+        self.assertEqual([c["name"] for c in d["campaigns"]],
+                         ["Brand - Search", "Generic - Search"])
+
+    def test_englische_zahlen_korrekt_gelesen(self):
+        d = parse_export(write_csv(self.GOOGLE_EN))
+        brand = d["campaigns"][0]
+        self.assertAlmostEqual(brand["kosten"], 1234.56, places=2)
+        self.assertEqual(brand["impressionen"], 124300)
+        self.assertEqual(brand["klicks"], 4210)
+        self.assertAlmostEqual(brand["conv_wert"], 9870.0, places=2)
+        self.assertAlmostEqual(d["total"]["kosten"], 4214.66, places=2)
+
+    def test_englische_summenzeile_gefiltert(self):
+        d = parse_export(write_csv(self.GOOGLE_EN))
+        self.assertNotIn("Total: account", [c["name"] for c in d["campaigns"]])
+
+    def test_cost_pro_conv_nicht_als_kosten_genommen(self):
+        d = parse_export(write_csv(self.GOOGLE_EN))
+        self.assertAlmostEqual(d["campaigns"][1]["kosten"], 2980.10, places=2)
+
+    def test_kampagne_die_mit_total_beginnt_bleibt(self):
+        p = write_csv("Campaign,Impressions,Clicks,Cost,Conversions\n"
+                      'Total Rewards Brand,10,1,1.00,0\n')
+        self.assertEqual(parse_export(p)["campaigns"][0]["name"], "Total Rewards Brand")
+
+    def test_englischer_meta_export_nicht_als_google_erkannt(self):
+        p = write_csv("Campaign name,Impressions,Link clicks,Amount spent (USD),"
+                      "Results,Purchase conversion value\n"
+                      'Retargeting,"12,000","1,200","345.60",18,"2,400.00"\n')
+        d = parse_export(p)
+        self.assertEqual(d["source"], "Meta Ads")
+        self.assertAlmostEqual(d["campaigns"][0]["kosten"], 345.6, places=2)
+
+    def test_englische_segmentspalte_wird_gemeldet(self):
+        p = write_csv("Campaign,Device,Impressions,Clicks,Cost,Conversions\n"
+                      "Brand,Mobile,10,1,1.00,0\nBrand,Desktop,20,2,2.00,1\n")
+        d = parse_export(p)
+        self.assertIn("Device", d["segments"])
+        self.assertEqual(len(d["campaigns"]), 1)
+        self.assertAlmostEqual(d["campaigns"][0]["kosten"], 3.0, places=2)
+
+    def test_waehrung_aus_der_kostenspalte(self):
+        usd = parse_export(write_csv(
+            "Campaign,Impressions,Clicks,Cost (USD),Conversions\n"
+            "Brand,10,1,1.00,0\n"))
+        self.assertEqual(usd["currency"], "$")
+        eur_export = parse_export(write_csv(
+            "Kampagne,Impressionen,Klicks,Kosten,Conversions\n"
+            'Brand,10,1,"1,00",0\n'))
+        self.assertEqual(eur_export["currency"], "€")
+
+    def test_report_zeigt_fremdwaehrung(self):
+        d = parse_export(write_csv(
+            "Campaign,Impressions,Clicks,Cost (USD),Conversions,Conv. value\n"
+            'Brand,"10,000",100,"1,234.56",10,"5,000.00"\n'))
+        out = render("Kunde", "August 2026", [d], DEFAULT_BRAND,
+                     build_commentary(d, None))
+        self.assertIn("1.234,56 $", out)
+        self.assertNotIn("1.234,56 €", out)
 
 
 class TestKommentar(unittest.TestCase):

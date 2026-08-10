@@ -37,10 +37,17 @@ python3 reporthelden/build_report.py exports/ --pdf
 ```
 
 - `aktuell.csv` — Kampagnenbericht aus **Google Ads** (Berichte → Kampagnen → CSV) oder **Meta Ads** (Werbeanzeigenmanager → Exportieren). Die Quelle wird automatisch am Header erkannt; Google braucht `Kampagne, Kosten` (plus Impressionen/Klicks/Conversions), Meta `Kampagnenname, Ausgegebener Betrag` (plus Link-Klicks/Ergebnisse/Conversion-Wert).
+- **Deutsche und englische Oberflächen** werden gleichermaßen gelesen — `Campaign, Cost, Impressions, Conv. value` bzw. `Campaign name, Amount spent, Link clicks, Purchase conversion value`. Viele PPC-Leute im DACH-Raum betreiben ihre Konten auf Englisch; ein englischer Export darf deshalb nicht am Header scheitern.
 - `vorperiode.csv` — optional; aktiviert Vergleichs-Deltas an den KPI-Kacheln und im Kommentar.
 - Der Parser ist tolerant gegenüber echten Exportvarianten: Vorspannzeilen, Summenzeilen
-  (`Gesamt`, `Gesamt: Konto`, `Summe`, Metas `Ergebnisse aus …`), Komma/Semikolon/Tab,
-  deutsche Zahlenformate und Spaltennamen mit Zusatz (`Kosten (EUR)`).
+  (`Gesamt`, `Gesamt: Konto`, `Summe`, `Total: account`, Metas `Ergebnisse aus …`),
+  Komma/Semikolon/Tab und Spaltennamen mit Zusatz (`Kosten (EUR)`, `Cost (USD)`).
+- **Zahlenformate erkennt der Parser pro Datei**, nicht pro Zelle: `1.234,56` und `1,234.56`
+  ergeben beide 1234,56. Das ist nötig, weil `1,234` für sich genommen mehrdeutig ist —
+  deutsch 1,234, englisch 1234. Eine eindeutige Zahl derselben Datei (`24.657,70` oder
+  `0.57`) entscheidet, welches Zeichen das Dezimaltrennzeichen ist; erst ohne jeden
+  Anhaltspunkt gilt der Separator als Tausendertrenner. Steht die Währung in der
+  Kostenspalte, übernimmt der Report sie (`Cost (USD)` → `8.549,06 $`).
 - **Segmentierte Exporte** (nach Tag, Woche, Gerät, Netzwerk …) enthalten mehrere Zeilen je
   Kampagne. Diese werden zusammengefasst — Summen addiert, Verhältniskennzahlen wie CTR,
   CPC und ROAS anschließend aus den Summen berechnet statt gemittelt. Ein Hinweis auf der
@@ -119,7 +126,8 @@ CI-Gate nutzbar.
 cd reporthelden && python3 -m unittest test_reporthelden -v
 ```
 
-20 Tests decken beide Parser (Google/Meta), deutsche und englische Zahlenformate,
+38 Tests decken beide Parser (Google/Meta) in deutscher und englischer Oberfläche,
+beide Zahlenformate samt Mehrdeutigkeiten, Währungserkennung, segmentierte Exporte,
 Spaltenverwechslungs- und Summenzeilen-Fälle, die Kommentar-Regeln, HTML-Escaping
 und den Multipart-Parser der App ab.
 

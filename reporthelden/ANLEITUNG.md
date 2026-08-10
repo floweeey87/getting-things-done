@@ -30,6 +30,12 @@ deinem Rechner (localhost) — es werden keine Daten übertragen.
 Tipp: Exportiere gleich die letzten 2–3 Monate als einzelne Dateien — ReportHelden macht
 daraus automatisch Vergleichswerte und Trendlinien.
 
+Egal welche Oberflächensprache: **deutsche und englische Exporte** werden beide gelesen
+(„Kampagne/Kosten" ebenso wie „Campaign/Cost"), inklusive der jeweiligen Zahlenformate
+(`1.234,56` und `1,234.56`). Segmentierte Exporte (nach Tag, Gerät, Netzwerk …) fasst
+ReportHelden automatisch je Kampagne zusammen. Steht die Währung in der Kostenspalte
+(`Cost (USD)`), erscheint sie auch so im Report.
+
 ## 4. Report erstellen
 
 CSV-Dateien ins Fenster ziehen, Kundennamen eintragen, „Report erstellen" klicken.
