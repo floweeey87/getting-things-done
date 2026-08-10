@@ -19,6 +19,8 @@ Nutzung:
     python3 build_report.py exports/ --brand agentur.json --ai
 """
 
+from __future__ import annotations  # Python 3.9 (macOS-Systempython)
+
 import argparse
 import base64
 import csv
@@ -29,6 +31,13 @@ import mimetypes
 import os
 import sys
 from pathlib import Path
+
+# macOS liefert Python 3.9 mit — das muss reichen, sonst scheitert der
+# Einstieg genau an der Hürde, die local-first eigentlich vermeiden soll.
+MIN_PYTHON = (3, 9)
+if sys.version_info < MIN_PYTHON:
+    sys.exit("ReportHelden braucht Python 3.9 oder neuer — hier läuft Python "
+             + ".".join(str(n) for n in sys.version_info[:3]) + ".")
 
 # Spalten-Mappings je Quelle: interner Name -> Liste möglicher Spalten-Präfixe.
 # Jede Quelle kennt die deutsche *und* die englische Oberfl\u00e4che \u2014 viele

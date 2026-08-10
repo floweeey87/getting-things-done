@@ -7,7 +7,10 @@ Danke, dass du bei der Beta dabei bist! In 5 Minuten erstellst du deinen ersten 
 ReportHelden läuft komplett auf deinem Rechner — dafür braucht es Python (kostenlos):
 
 - **Windows:** [python.org/downloads](https://www.python.org/downloads/) → Installer starten → **Haken bei „Add Python to PATH" setzen** → Installieren.
-- **macOS:** Python ist meist schon da. Prüfen: Terminal öffnen, `python3 --version` eintippen. Falls nicht: [python.org/downloads](https://www.python.org/downloads/).
+- **macOS:** Python ist schon da — der mitgelieferte Systempython genügt. Prüfen: Terminal öffnen, `python3 --version` eintippen.
+
+Benötigt wird **Python 3.9 oder neuer**. Das ist bewusst niedrig angesetzt: 3.9 ist genau
+die Version, die macOS selbst mitbringt — auf dem Mac musst du also gar nichts installieren.
 
 Mehr wird nicht installiert — ReportHelden selbst hat keine Abhängigkeiten.
 

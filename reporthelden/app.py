@@ -10,6 +10,8 @@ CSV-Exporte (Google Ads oder Meta Ads) ins Fenster ziehen, Kundennamen
 eintragen, fertig. Mehrere Monate ergeben automatisch Trends.
 """
 
+from __future__ import annotations  # Python 3.9 (macOS-Systempython)
+
 import re
 import sys
 import tempfile
@@ -17,7 +19,18 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-from build_report import (DEFAULT_BRAND, build_commentary, load_brand,
+MIN_PYTHON = (3, 9)
+if sys.version_info < MIN_PYTHON:
+    haben = ".".join(str(n) for n in sys.version_info[:3])
+    sys.exit(
+        "\nReportHelden braucht Python 3.9 oder neuer — hier läuft "
+        f"Python {haben}.\n\n"
+        "Windows: Python von python.org installieren (Haken bei „Add "
+        "python.exe to PATH“ setzen).\n"
+        "macOS:   Der mitgelieferte Systempython (3.9) genügt — starte mit "
+        "python3 statt python.\n")
+
+from build_report import (DEFAULT_BRAND, build_commentary, load_brand,  # noqa: E402
                           parse_export, render)
 
 HOST, PORT = "127.0.0.1", 8437

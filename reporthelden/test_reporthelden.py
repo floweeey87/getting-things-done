@@ -5,6 +5,7 @@ Kommentar-Regeln, Rendering und den Multipart-Parser der App.
     python3 -m unittest test_reporthelden -v
 """
 
+import ast
 import tempfile
 import unittest
 from pathlib import Path
@@ -304,6 +305,60 @@ class TestMultipart(unittest.TestCase):
         ).encode()
         files, _ = parse_multipart(body, f'multipart/form-data; boundary={boundary}')
         self.assertEqual(files[0][0], "evil.csv")
+
+
+class TestPython39(unittest.TestCase):
+    """macOS liefert Python 3.9 mit („ist doch eh schon drauf") — genau darauf
+    muss der ausgelieferte Code laufen. Ohne diese Absicherung schlägt
+    ``str | None`` erst beim Beta-Nutzer zu, mit einem Traceback beim Start."""
+
+    SHIPPED = ("app.py", "build_report.py")
+
+    def quelle(self, name: str) -> str:
+        return (Path(__file__).parent / name).read_text(encoding="utf-8")
+
+    def test_syntax_ist_39_kompatibel(self):
+        """Fängt 3.10+-Syntax ab (match-Statement, geklammerte with-Blöcke)."""
+        for name in self.SHIPPED:
+            with self.subTest(datei=name):
+                ast.parse(self.quelle(name), filename=name, feature_version=(3, 9))
+
+    def test_annotations_werden_nicht_ausgewertet(self):
+        """``from __future__ import annotations`` macht ``str | None`` in
+        Signaturen zu einem String — sonst: TypeError beim Import."""
+        for name in self.SHIPPED:
+            with self.subTest(datei=name):
+                baum = ast.parse(self.quelle(name), filename=name)
+                futures = [a.name for k in baum.body
+                           if isinstance(k, ast.ImportFrom) and k.module == "__future__"
+                           for a in k.names]
+                self.assertIn("annotations", futures)
+
+    def test_kein_pep604_ausserhalb_von_annotationen(self):
+        """``int | None`` in normalem Code (z. B. isinstance) rettet der
+        Future-Import nicht — solche Stellen müssen typing.Optional nutzen."""
+        for name in self.SHIPPED:
+            baum = ast.parse(self.quelle(name), filename=name)
+            annotationen = set()
+            for k in ast.walk(baum):
+                if isinstance(k, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    ziele = [a.annotation for a in k.args.args + k.args.kwonlyargs]
+                    annotationen.update(id(x) for x in ziele + [k.returns] if x)
+                elif isinstance(k, ast.AnnAssign):
+                    annotationen.add(id(k.annotation))
+            innerhalb = {id(sub) for a in ast.walk(baum) if id(a) in annotationen
+                         for sub in ast.walk(a)}
+            for k in ast.walk(baum):
+                if (isinstance(k, ast.BinOp) and isinstance(k.op, ast.BitOr)
+                        and id(k) not in innerhalb):
+                    self.assertIsNot(
+                        type(k.right), ast.Constant,
+                        f"{name}:{k.lineno}: PEP-604-Union außerhalb einer Annotation")
+
+    def test_mindestversion_wird_geprueft(self):
+        for name in self.SHIPPED:
+            with self.subTest(datei=name):
+                self.assertIn("MIN_PYTHON = (3, 9)", self.quelle(name))
 
 
 if __name__ == "__main__":

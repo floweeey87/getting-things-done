@@ -16,7 +16,9 @@ Welle** in die Landingpage — nicht ins Gespräch.
 *Der wahrscheinlich häufigste Abbruchgrund — nimm ihn ernst statt ihn wegzureden.*
 
 > Verstehe ich. Es ist ein einmaliger Installer, danach Doppelklick auf eine
-> Datei — kein Terminal. Auf dem Mac ist Python meistens schon drauf. Wenn dir
+> Datei — kein Terminal. **Auf dem Mac musst du gar nichts installieren:**
+> ReportHelden läuft auf dem Python, das macOS selbst mitbringt (3.9) — das ist
+> getestet, nicht gehofft. Nur unter Windows ist der Installer nötig. Wenn dir
 > das trotzdem zu viel ist: völlig legitim, dann warte auf die Klick-Version.
 > Ich sag dir Bescheid, sobald es die gibt.
 
