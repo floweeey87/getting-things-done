@@ -126,7 +126,7 @@ CI-Gate nutzbar.
 cd reporthelden && python3 -m unittest test_reporthelden -v
 ```
 
-54 Tests decken beide Parser (Google/Meta) in deutscher und englischer Oberfläche,
+57 Tests decken beide Parser (Google/Meta) in deutscher und englischer Oberfläche,
 beide Zahlenformate samt Mehrdeutigkeiten, Währungserkennung, segmentierte Exporte,
 Spaltenverwechslungs- und Summenzeilen-Fälle, die Kommentar-Regeln, HTML-Escaping
 und den Multipart-Parser der App ab. Vier davon sichern die **Python-3.9-Kompatibilität**
@@ -139,7 +139,9 @@ unlesbare Bytes ohne Traceback — und ein AST-Guard, dass keine Datei-Operation
 scheitert am ersten `€` des Reports). Sechs weitere prüfen **Datenlagen**, bei denen der
 Kommentar bisher abstürzte oder etwas behauptete, das die Zahlen nicht hergeben: pausiertes
 Konto ohne Kosten, fehlendes Conversion-Tracking, Vorperiode ohne Conversions, ein Konto mit
-nur einer Kampagne — und dass Prozentwerte deutsch geschrieben werden.
+nur einer Kampagne — und dass Prozentwerte deutsch geschrieben werden. Drei prüfen
+**Bedienfehler**: Google- und Meta-Exporte gemeinsam abzugeben ergibt keinen Trend, sondern
+einen Vergleich zweier Plattformen — das wird abgelehnt statt still falsch gerechnet.
 
 ## Roadmap
 

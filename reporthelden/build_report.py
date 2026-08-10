@@ -327,6 +327,24 @@ def parse_export(path: Path) -> dict:
             "label": path.stem.replace("kampagnen-", "").replace("meta-", "").replace("-", " ")}
 
 
+def check_sources(history: list[dict]) -> None:
+    """Mehrere Plattformen in einem Report ablehnen.
+
+    Die Historie ist eine Zeitreihe: Datei 1 ist die Vorperiode von Datei 2.
+    Wirft man einen Google- und einen Meta-Export zusammen hinein, vergleicht
+    der Report zwei Plattformen desselben Monats als wären es zwei Monate —
+    und behauptet Veränderungen, die es nie gab. Lieber klar ablehnen als
+    still falsche Zahlen an den Kunden des Kunden schicken.
+    """
+    quellen = sorted({h["source"] for h in history})
+    if len(quellen) > 1:
+        raise SystemExit(
+            "Die Exporte stammen aus verschiedenen Quellen (" + " und ".join(quellen) + ").\n"
+            "Mehrere Monate derselben Plattform ergeben einen Trend — verschiedene "
+            "Plattformen ergeben keinen.\nBitte pro Plattform einen eigenen Report "
+            "erstellen (ein gemeinsamer Report für Google und Meta ist geplant).")
+
+
 def load_inputs(paths: list[Path]) -> list[dict]:
     """Ein Ordner (alle *.csv, sortiert) oder 1-2 CSV-Dateien -> Historie,
     ältester zuerst, neuester = Berichtszeitraum."""
@@ -334,10 +352,13 @@ def load_inputs(paths: list[Path]) -> list[dict]:
         files = sorted(paths[0].glob("*.csv"))
         if not files:
             raise SystemExit(f"{paths[0]}: keine CSV-Dateien gefunden.")
-        return [parse_export(f) for f in files]
-    if len(paths) == 2:
-        return [parse_export(paths[1]), parse_export(paths[0])]
-    return [parse_export(paths[0])]
+        history = [parse_export(f) for f in files]
+    elif len(paths) == 2:
+        history = [parse_export(paths[1]), parse_export(paths[0])]
+    else:
+        history = [parse_export(paths[0])]
+    check_sources(history)
+    return history
 
 
 def load_brand(path: Path | None) -> dict:

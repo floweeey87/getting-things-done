@@ -30,8 +30,8 @@ if sys.version_info < MIN_PYTHON:
         "macOS:   Der mitgelieferte Systempython (3.9) genügt — starte mit "
         "python3 statt python.\n")
 
-from build_report import (DEFAULT_BRAND, build_commentary, load_brand,  # noqa: E402
-                          parse_export, render)
+from build_report import (DEFAULT_BRAND, build_commentary, check_sources,  # noqa: E402
+                          load_brand, parse_export, render)
 
 HOST, PORT = "127.0.0.1", 8437
 
@@ -185,6 +185,7 @@ class Handler(BaseHTTPRequestHandler):
                     p.write_bytes(content)
                     paths.append(p)
                 history = [parse_export(p) for p in paths]
+                check_sources(history)
         except SystemExit as exc:
             self._send(422, f"<h1>CSV nicht lesbar</h1><p>{exc}</p><p><a href='/'>Zurück</a></p>")
             return
@@ -202,8 +203,18 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    server = HTTPServer((HOST, PORT), Handler)
     url = f"http://{HOST}:{PORT}"
+    try:
+        server = HTTPServer((HOST, PORT), Handler)
+    except OSError:
+        # Zweiter Doppelklick auf den Starter: Der Nutzer will die Oberfläche
+        # sehen, nicht erfahren, dass ein Port belegt ist.
+        print(f"ReportHelden läuft bereits — Fenster wird geöffnet: {url}")
+        try:
+            webbrowser.open(url)
+        except Exception:
+            pass
+        return 0
     print(f"ReportHelden läuft auf {url} — Fenster schließen mit Strg+C.")
     try:
         webbrowser.open(url)

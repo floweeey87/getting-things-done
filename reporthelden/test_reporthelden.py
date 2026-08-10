@@ -12,8 +12,9 @@ import unittest
 from pathlib import Path
 
 from app import parse_multipart
-from build_report import (DEFAULT_BRAND, build_commentary, de, detect_decimal,
-                          eur, parse_export, parse_number, pct, pct_delta, render)
+from build_report import (DEFAULT_BRAND, build_commentary, check_sources, de,
+                          detect_decimal, eur, load_inputs, parse_export,
+                          parse_number, pct, pct_delta, render)
 
 SAMPLES = Path(__file__).parent / "sample-data"
 
@@ -363,6 +364,33 @@ class TestDatenlagen(unittest.TestCase):
         self.assertEqual(pct(-5.67), "-5,7 %")
         self.assertEqual(pct(None), "kein Vorwert")
         self.assertEqual(pct(-5.67, signed=False), "5,7 %")
+
+
+class TestBedienfehler(unittest.TestCase):
+    """Was Nutzer tatsächlich tun — nicht, was die Anleitung vorsieht."""
+
+    def test_google_und_meta_zusammen_wird_abgelehnt(self):
+        """„Hier sind meine Juli-Exporte" (Google + Meta) ergab einen Report,
+        der die eine Plattform als Vorperiode der anderen auswies — inklusive
+        erfundener Veränderungsraten."""
+        history = [parse_export(SAMPLES / "kampagnen-juli-2026.csv"),
+                   parse_export(SAMPLES / "meta" / "meta-juli-2026.csv")]
+        with self.assertRaises(SystemExit) as ctx:
+            check_sources(history)
+        self.assertIn("verschiedenen Quellen", str(ctx.exception))
+
+    def test_mehrere_monate_derselben_quelle_bleiben_erlaubt(self):
+        history = [parse_export(SAMPLES / "kampagnen-juni-2026.csv"),
+                   parse_export(SAMPLES / "kampagnen-juli-2026.csv")]
+        self.assertIsNone(check_sources(history))
+
+    def test_ordner_mit_gemischten_quellen(self):
+        ordner = Path(tempfile.mkdtemp())
+        for quelle, ziel in ((SAMPLES / "kampagnen-juli-2026.csv", "a-google.csv"),
+                             (SAMPLES / "meta" / "meta-juli-2026.csv", "b-meta.csv")):
+            (ordner / ziel).write_bytes(quelle.read_bytes())
+        with self.assertRaises(SystemExit):
+            load_inputs([ordner])
 
 
 class TestWindows(unittest.TestCase):

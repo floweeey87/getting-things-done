@@ -33,6 +33,11 @@ deinem Rechner (localhost) — es werden keine Daten übertragen.
 Tipp: Exportiere gleich die letzten 2–3 Monate als einzelne Dateien — ReportHelden macht
 daraus automatisch Vergleichswerte und Trendlinien.
 
+**Pro Report eine Plattform.** Mehrere Monate aus Google Ads ergeben einen Trend; ein
+Google- und ein Meta-Export zusammen ergeben keinen — sie sind zwei Plattformen, nicht zwei
+Zeiträume. ReportHelden weist das ab, statt einen Vergleich zu erfinden. Für beide
+Plattformen also zwei Reports erstellen.
+
 Die CSV darf ruhig durch Excel gelaufen sein — ReportHelden erkennt die Kodierung selbst
 (UTF-8, UTF-16, Windows-Codepage) und liest auch Exporte, die in Excel geöffnet und wieder
 gespeichert wurden.
