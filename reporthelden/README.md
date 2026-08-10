@@ -70,6 +70,24 @@ Windows/macOS, White-Label-Vorlage und Beispieldaten — das Paket, das Beta-Kä
 der Zahlung bekommen. SEO-Artikel und LinkedIn-Posts für den Launch liegen in
 [`marketing/`](marketing/).
 
+## Artikel auf WordPress veröffentlichen
+
+```bash
+export WP_USER='...'
+export WP_APP_PASSWORD='xxxx xxxx xxxx xxxx xxxx xxxx'   # Anwendungspasswort, nicht das Login-Passwort
+
+python3 reporthelden/publish_wp.py                          # Trockenlauf
+python3 reporthelden/publish_wp.py --preview vorschau.html  # erzeugtes HTML ansehen
+python3 reporthelden/publish_wp.py --apply                  # als Entwürfe anlegen
+python3 reporthelden/publish_wp.py --apply --status publish # direkt live
+```
+
+Überträgt die SEO-Artikel aus `marketing/` als WordPress-Beiträge. Trockenlauf und
+Entwurfsstatus sind Voreinstellung, Zugangsdaten kommen ausschließlich aus der Umgebung,
+und bestehende Beiträge werden über den Slug aktualisiert statt dupliziert. Die interne
+`Ziel-Keywords`-Zeile wird nie mitveröffentlicht — das Skript bricht ab, falls sie es
+doch in den Inhalt schaffen sollte.
+
 ## Pre-Launch-Check
 
 ```bash
