@@ -389,6 +389,17 @@ def pct_delta(now: float, before: float) -> float | None:
     return (now - before) / before * 100
 
 
+def pct(delta: float | None, signed: bool = True) -> str:
+    """Prozentwert in deutscher Schreibweise: „+12,3 %".
+
+    Python formatiert mit Punkt — in einem deutschen Kundenreport, in dem
+    jede andere Zahl ein Komma hat, fällt genau das auf.
+    """
+    if delta is None:
+        return "kein Vorwert"
+    return f"{delta:+.1f}".replace(".", ",") + " %" if signed else de(abs(delta), 1) + " %"
+
+
 # ------------------------------------------------------------- Kommentar
 
 def build_commentary(data: dict, prev: dict | None) -> list[str]:
@@ -397,18 +408,44 @@ def build_commentary(data: dict, prev: dict | None) -> list[str]:
     campaigns = data["campaigns"]
     parts = []
 
+    aktiv = [c for c in campaigns if c["kosten"] > 0]
+
+    # Kein Umsatzwert im Export: dann ist ROAS keine Aussage über die
+    # Leistung, sondern nur ein Hinweis auf fehlendes Conversion-Tracking.
+    # Ein Report, der daraufhin alle Kampagnen für unrentabel erklärt,
+    # verliert das Vertrauen des Kunden zu Recht.
+    ohne_conversion_daten = total["conversions"] == 0 and total["conv_wert"] == 0
+
+    if not aktiv:
+        parts.append(
+            f"Im Berichtszeitraum wurden keine Kosten verbucht — die Kampagnen "
+            f"waren pausiert oder haben nicht ausgeliefert. "
+            f"{de(total['impressionen'])} Impressionen, {de(total['klicks'])} Klicks."
+        )
+        return parts
+
     if prev:
         pt = prev["total"]
         d_kosten = pct_delta(total["kosten"], pt["kosten"])
         d_conv = pct_delta(total["conversions"], pt["conversions"])
         d_roas = pct_delta(total["roas"], pt["roas"])
-        richtung = "gestiegen" if (d_roas or 0) >= 0 else "gesunken"
+        satz = (f"Im Berichtszeitraum wurden {eur(total['kosten'])} investiert "
+                f"({pct(d_kosten)} gegenüber der Vorperiode) und "
+                f"{de(total['conversions'])} Conversions erzielt ({pct(d_conv)}).")
+        if d_roas is None:
+            satz += (f" Der ROAS liegt bei {de(total['roas'], 2)}; ein Vergleich mit der "
+                     f"Vorperiode ist nicht möglich, weil dort kein Umsatzwert vorlag.")
+        else:
+            richtung = "gestiegen" if d_roas >= 0 else "gesunken"
+            satz += (f" Der ROAS ist auf {de(total['roas'], 2)} {richtung} ({pct(d_roas)}) — "
+                     f"das Konto entwickelt sich damit "
+                     f"{'effizienter' if d_roas >= 0 else 'weniger effizient'} als im Vormonat.")
+        parts.append(satz)
+    elif ohne_conversion_daten:
         parts.append(
-            f"Im Berichtszeitraum wurden {eur(total['kosten'])} investiert "
-            f"({d_kosten:+.1f} % gegenüber der Vorperiode) und {de(total['conversions'])} Conversions "
-            f"erzielt ({d_conv:+.1f} %). Der ROAS ist auf {de(total['roas'], 2)} {richtung} "
-            f"({d_roas:+.1f} %) — das Konto entwickelt sich damit "
-            f"{'effizienter' if (d_roas or 0) >= 0 else 'weniger effizient'} als im Vormonat."
+            f"Im Berichtszeitraum wurden {eur(total['kosten'])} investiert und damit "
+            f"{de(total['impressionen'])} Impressionen und {de(total['klicks'])} Klicks "
+            f"erzielt (CTR {de(total['ctr'], 2)} %, Ø-CPC {eur(total['cpc'])})."
         )
     else:
         parts.append(
@@ -417,14 +454,33 @@ def build_commentary(data: dict, prev: dict | None) -> list[str]:
             f"erzielt (ROAS {de(total['roas'], 2)})."
         )
 
-    by_roas = sorted((c for c in campaigns if c["kosten"] > 0), key=lambda c: c["roas"], reverse=True)
+    if ohne_conversion_daten:
+        # Ohne Umsatzwert nach Klickpreis ranken statt nach ROAS.
+        nach_cpc = sorted(aktiv, key=lambda c: c["cpc"])
+        parts.append(
+            f"Für diesen Zeitraum sind keine Conversions erfasst. Eine Aussage zur "
+            f"Rentabilität ist damit nicht möglich — bitte prüfen, ob das Conversion-"
+            f"Tracking aktiv ist. Nach Klickpreis liegt „{nach_cpc[0]['name']}“ vorn "
+            f"({eur(nach_cpc[0]['cpc'])} pro Klick)"
+            + (f", am teuersten ist „{nach_cpc[-1]['name']}“ ({eur(nach_cpc[-1]['cpc'])})."
+               if len(nach_cpc) > 1 else ".")
+        )
+        return parts
+
+    by_roas = sorted(aktiv, key=lambda c: c["roas"], reverse=True)
     best, worst = by_roas[0], by_roas[-1]
     hinweis = " (Brand-Traffic ist naturgemäß am effizientesten)" if "brand" in best["name"].lower() else ""
-    parts.append(
-        f"Stärkste Kampagne nach Effizienz war „{best['name']}“ mit einem ROAS von "
-        f"{de(best['roas'], 2)}{hinweis}. Am schwächsten schnitt „{worst['name']}“ ab "
-        f"(ROAS {de(worst['roas'], 2)} bei {eur(worst['kosten'])} Kosten)."
-    )
+    if len(by_roas) == 1:
+        parts.append(
+            f"Es lief nur eine Kampagne: „{best['name']}“ mit einem ROAS von "
+            f"{de(best['roas'], 2)} bei {eur(best['kosten'])} Kosten{hinweis}."
+        )
+    else:
+        parts.append(
+            f"Stärkste Kampagne nach Effizienz war „{best['name']}“ mit einem ROAS von "
+            f"{de(best['roas'], 2)}{hinweis}. Am schwächsten schnitt „{worst['name']}“ ab "
+            f"(ROAS {de(worst['roas'], 2)} bei {eur(worst['kosten'])} Kosten)."
+        )
 
     weak = [c for c in by_roas if c["roas"] < 1.5 and c["kosten"] > total["kosten"] * 0.05]
     strong = [c for c in by_roas if c["roas"] > total["roas"]]
@@ -445,7 +501,7 @@ def build_commentary(data: dict, prev: dict | None) -> list[str]:
             if d_cpc is not None and abs(d_cpc) >= 15:
                 parts.append(
                     f"Auffällig: Der durchschnittliche Klickpreis von „{c['name']}“ hat sich um "
-                    f"{d_cpc:+.1f} % auf {eur(c['cpc'])} verändert — "
+                    f"{pct(d_cpc)} auf {eur(c['cpc'])} verändert — "
                     f"{'Wettbewerbsdruck oder Gebotsanpassungen prüfen.' if d_cpc > 0 else 'die Effizienzgewinne können für zusätzliche Reichweite genutzt werden.'}"
                 )
                 break
@@ -517,7 +573,8 @@ def kpi_tile(label: str, value: str, delta: float | None, invert: bool = False) 
         good = (delta >= 0) != invert
         cls = "delta-good" if good else "delta-bad"
         arrow = "▲" if delta >= 0 else "▼"
-        badge = f'<span class="delta {cls}">{arrow} {abs(delta):.1f} % <em>vs. Vorperiode</em></span>'
+        badge = (f'<span class="delta {cls}">{arrow} {pct(delta, signed=False)}'
+                 f' <em>vs. Vorperiode</em></span>')
     return (f'<div class="tile"><span class="tile-label">{html.escape(label)}</span>'
             f'<span class="tile-value">{value}</span>{badge}</div>')
 

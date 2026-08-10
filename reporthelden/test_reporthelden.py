@@ -6,13 +6,14 @@ Kommentar-Regeln, Rendering und den Multipart-Parser der App.
 """
 
 import ast
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
 from app import parse_multipart
 from build_report import (DEFAULT_BRAND, build_commentary, de, detect_decimal,
-                          eur, parse_export, parse_number, pct_delta, render)
+                          eur, parse_export, parse_number, pct, pct_delta, render)
 
 SAMPLES = Path(__file__).parent / "sample-data"
 
@@ -305,6 +306,63 @@ class TestMultipart(unittest.TestCase):
         ).encode()
         files, _ = parse_multipart(body, f'multipart/form-data; boundary={boundary}')
         self.assertEqual(files[0][0], "evil.csv")
+
+
+class TestDatenlagen(unittest.TestCase):
+    """Kontoformen, die es wirklich gibt — und bei denen der Kommentar weder
+    abstürzen noch etwas behaupten darf, was die Zahlen nicht hergeben.
+    Der Text geht an den Kunden des Kunden; eine falsche Aussage darin
+    kostet mehr Vertrauen, als das Tool an Zeit spart."""
+
+    KOPF = "Kampagne,Impressionen,Klicks,Kosten,Conversions,Conv.-Wert\n"
+
+    def export(self, *zeilen: str):
+        return parse_export(write_csv(self.KOPF + "".join(zeilen)))
+
+    def test_pausiertes_konto_stuerzt_nicht_ab(self):
+        d = self.export('Brand,100,0,"0,00",0,"0,00"\n', 'Generic,50,0,"0,00",0,"0,00"\n')
+        text = " ".join(build_commentary(d, None))
+        self.assertIn("keine Kosten verbucht", text)
+        self.assertNotIn("ROAS", text)
+
+    def test_ohne_conversion_tracking_kein_rentabilitaetsurteil(self):
+        d = self.export('Brand,12000,540,"1.234,56",0,"0,00"\n',
+                        'Generic,8000,300,"800,00",0,"0,00"\n')
+        text = " ".join(build_commentary(d, None))
+        self.assertIn("keine Conversions erfasst", text)
+        self.assertIn("Conversion-Tracking", text)
+        # Ohne Umsatzwert ist ROAS 0 kein Befund, sondern eine Datenlücke:
+        self.assertNotIn("Effizienzschwelle", text)
+        self.assertNotIn("ROAS von 0,00", text)
+
+    def test_vorperiode_ohne_conversions_stuerzt_nicht_ab(self):
+        jetzt = self.export('Brand,12000,540,"1.234,56",48,"9.870,00"\n')
+        vorher = self.export('Brand,9000,400,"900,00",0,"0,00"\n')
+        text = " ".join(build_commentary(jetzt, vorher))
+        self.assertIn("kein Vorwert", text)
+        self.assertIn("nicht möglich", text)
+
+    def test_einzelne_kampagne_ist_nicht_gleichzeitig_beste_und_schlechteste(self):
+        d = self.export('Brand,12000,540,"1.234,56",48,"9.870,00"\n')
+        text = " ".join(build_commentary(d, None))
+        self.assertIn("nur eine Kampagne", text)
+        self.assertNotIn("Am schwächsten", text)
+
+    def test_prozentwerte_stehen_deutsch_im_report(self):
+        """In einem Report, in dem jede Zahl ein Komma hat, fällt „-5.7 %" auf."""
+        jetzt = self.export('Brand,12000,540,"1.234,56",48,"9.870,00"\n')
+        vorher = self.export('Brand,9000,400,"1.100,00",40,"8.000,00"\n')
+        out = render("Kunde", "Juli", [vorher, jetzt], DEFAULT_BRAND,
+                     build_commentary(jetzt, vorher))
+        sichtbar = " ".join(re.findall(r">([^<]+)<", out))  # ohne CSS und Attribute
+        self.assertNotRegex(sichtbar, r"[+-]?\d+\.\d ?%")
+        self.assertRegex(sichtbar, r"\d+,\d ?%")
+
+    def test_pct_hilfsfunktion(self):
+        self.assertEqual(pct(12.34), "+12,3 %")
+        self.assertEqual(pct(-5.67), "-5,7 %")
+        self.assertEqual(pct(None), "kein Vorwert")
+        self.assertEqual(pct(-5.67, signed=False), "5,7 %")
 
 
 class TestWindows(unittest.TestCase):
