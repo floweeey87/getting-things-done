@@ -562,6 +562,60 @@ footer {{ margin-top: 3rem; color: var(--muted); font-size: .78rem; }}
 """
 
 
+BROWSER_CANDIDATES = [
+    "chromium", "chromium-browser", "google-chrome", "google-chrome-stable",
+    "chrome", "msedge", "microsoft-edge", "brave-browser",
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+]
+
+
+def find_browser() -> str | None:
+    """Findet einen Chromium-basierten Browser fuer den PDF-Export.
+
+    Reihenfolge: Umgebungsvariable REPORTHELDEN_BROWSER, dann PATH,
+    dann bekannte Installationspfade (macOS/Windows).
+    """
+    import shutil
+    override = os.environ.get("REPORTHELDEN_BROWSER")
+    if override and Path(override).exists():
+        return override
+    for cand in BROWSER_CANDIDATES:
+        if Path(cand).exists():
+            return cand
+        hit = shutil.which(cand)
+        if hit:
+            return hit
+    return None
+
+
+def export_pdf(html_path: Path, pdf_path: Path) -> bool:
+    """Rendert den HTML-Report per Headless-Browser als PDF (ohne Druckdialog)."""
+    import subprocess
+    browser = find_browser()
+    if not browser:
+        print("Warnung: kein Chrome/Edge/Chromium gefunden — PDF uebersprungen. "
+              "Alternativ REPORTHELDEN_BROWSER auf den Browser-Pfad setzen "
+              "oder den Report im Browser drucken.", file=sys.stderr)
+        return False
+    args = [browser, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
+            f"--print-to-pdf={pdf_path}", html_path.resolve().as_uri()]
+    for extra in ([], ["--no-sandbox"]):
+        try:
+            r = subprocess.run(args + extra, capture_output=True, timeout=60)
+            if r.returncode == 0 and pdf_path.exists() and pdf_path.stat().st_size > 0:
+                return True
+        except (subprocess.TimeoutExpired, OSError):
+            break
+    print("Warnung: PDF-Export fehlgeschlagen — HTML-Report liegt trotzdem vor.",
+          file=sys.stderr)
+    return False
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -572,6 +626,8 @@ def main() -> int:
     ap.add_argument("--brand", type=Path, help="JSON mit agentur, logo, accent, accent_dark, footer")
     ap.add_argument("--ai", action="store_true",
                     help="Kommentar per Claude-API verfeinern (benötigt ANTHROPIC_API_KEY)")
+    ap.add_argument("--pdf", action="store_true",
+                    help="zusaetzlich ein PDF erzeugen (nutzt installiertes Chrome/Edge, ohne Druckdialog)")
     ap.add_argument("-o", "--output", type=Path,
                     default=Path(__file__).parent / "dist" / "report.html")
     args = ap.parse_args()
@@ -589,6 +645,8 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(render(args.kunde, zeitraum, history, brand, commentary))
     extras = []
+    if args.pdf and export_pdf(args.output, args.output.with_suffix(".pdf")):
+        extras.append("PDF")
     if len(history) >= 3:
         extras.append(f"{len(history)}-Monats-Trend")
     if prev:

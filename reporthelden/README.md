@@ -31,6 +31,9 @@ python3 reporthelden/build_report.py exports/ --kunde "Beispiel GmbH"
 
 # White-Label (Logo, Farben, Agenturname) und KI-Feinschliff
 python3 reporthelden/build_report.py exports/ --brand agentur.json --ai
+
+# Zusaetzlich als PDF (nutzt installiertes Chrome/Edge headless, ohne Druckdialog)
+python3 reporthelden/build_report.py exports/ --pdf
 ```
 
 - `aktuell.csv` — Kampagnenbericht aus **Google Ads** (Berichte → Kampagnen → CSV) oder **Meta Ads** (Werbeanzeigenmanager → Exportieren). Die Quelle wird automatisch am Header erkannt; Google braucht `Kampagne, Kosten` (plus Impressionen/Klicks/Conversions), Meta `Kampagnenname, Ausgegebener Betrag` (plus Link-Klicks/Ergebnisse/Conversion-Wert).
@@ -79,6 +82,5 @@ und den Multipart-Parser der App ab.
 
 ## Roadmap
 
-- ✅ White-Label, Mehrmonats-Trends, KI-Feinschliff, Meta-Ads-Import, Drag-&-Drop-App, Test-Suite
+- ✅ White-Label, Mehrmonats-Trends, KI-Feinschliff, Meta-Ads-Import, Drag-&-Drop-App, Test-Suite, PDF-Export (`--pdf`, via installiertem Chrome/Edge)
 - GA4-Exporte als weitere Quelle
-- PDF-Export ohne Druckdialog

@@ -36,6 +36,8 @@ CSV-Dateien ins Fenster ziehen, Kundennamen eintragen, „Report erstellen" klic
 Kommentar kurz gegenlesen (er ist ein Vorschlag, kein Gesetz), dann:
 
 - **Als PDF an den Kunden:** Im Browser Drucken (Strg+P / Cmd+P) → „Als PDF sichern".
+  Profi-Weg ohne Druckdialog: `python3 build_report.py deine-exports/ --pdf` erzeugt das PDF direkt
+  (nutzt dein installiertes Chrome oder Edge im Hintergrund).
 - **Als HTML:** Seite speichern (Strg+S) — eine einzige Datei, die überall funktioniert.
 
 ## 5. Dein Branding (optional)
